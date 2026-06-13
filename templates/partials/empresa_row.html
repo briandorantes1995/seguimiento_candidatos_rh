@@ -1,0 +1,24 @@
+<tr class="border-t">
+    <tr id="empresa-{{ empresa.id }}">
+    <td class="px-4 py-3">{{ empresa.name }}</td>
+    <td class="px-4 py-3">{{ empresa.rfc }}</td>
+    <td class="px-4 py-3">
+        <button
+            class="text-blue-600 hover:underline"
+            hx-get="/empresas/{{ empresa.id }}/edit"
+            hx-target="#empresa-{{ empresa.id }}"
+            hx-swap="outerHTML">
+            Editar
+        </button>
+    </td>
+    <td class="px-4 py-3">
+        <button
+            class="text-blue-600 hover:underline"
+            hx-delete="/empresas/{{ empresa.id }}/"
+            hx-target="#empresa-{{ empresa.id }}"
+            hx-swap="outerHTML">
+            Eliminar
+        </button>
+    </td>
+</tr>
+</tr>

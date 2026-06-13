@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema RH</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+</head>
+<body class="bg-slate-50 min-h-screen">
+    <nav class="bg-white border-b shadow-sm">
+    <div class="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
+    <div>
+        <span class="font-semibold text-slate-800">
+            Sistema RH
+        </span>
+    </div>
+
+    <div class="flex items-center gap-4">
+        <span class="text-sm text-slate-600">
+            {{ user.name }}
+        </span>
+
+        <form action="/auth/logout" method="post">
+            <button
+                type="submit"
+                class="px-3 py-2 rounded-lg bg-red-500 text-white text-sm hover:bg-red-600 transition">
+                Cerrar sesión
+            </button>
+        </form>
+    </div>
+
+</div>
+</nav>
+<main class="max-w-6xl mx-auto px-6 py-10">
+
+    <header class="mb-10">
+        <h1 class="text-4xl font-bold text-slate-900">
+            Sistema de Reclutamiento
+        </h1>
+
+        <p class="mt-2 text-slate-600">
+            Administración de empresas, puestos y candidatos.
+        </p>
+    </header>
+
+    <section class="grid gap-6 md:grid-cols-3">
+
+        <a href="/empresas/form"
+           class="bg-white rounded-xl border p-6 shadow-sm hover:shadow-md transition">
+
+            <h2 class="text-xl font-semibold mb-2">
+                Empresas
+            </h2>
+
+            <p class="text-slate-600 mb-4">
+                Gestiona las empresas registradas.
+            </p>
+
+            <span class="text-sm font-medium text-blue-600">
+                Ver empresas →
+            </span>
+        </a>
+
+        <a href="/puestos/form"
+           class="bg-white rounded-xl border p-6 shadow-sm hover:shadow-md transition">
+
+            <h2 class="text-xl font-semibold mb-2">
+                Puestos
+            </h2>
+
+            <p class="text-slate-600 mb-4">
+                Administra vacantes y posiciones.
+            </p>
+
+            <span class="text-sm font-medium text-blue-600">
+                Ver puestos →
+            </span>
+        </a>
+
+        <a href="/candidatos/form"
+           class="bg-white rounded-xl border p-6 shadow-sm hover:shadow-md transition">
+
+            <h2 class="text-xl font-semibold mb-2">
+                Candidatos
+            </h2>
+
+            <p class="text-slate-600 mb-4">
+                Consulta y registra candidatos.
+            </p>
+
+            <span class="text-sm font-medium text-blue-600">
+                Ver candidatos →
+            </span>
+        </a>
+
+    </section>
+
+</main>
+
+</body>
+</html>

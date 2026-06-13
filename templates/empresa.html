@@ -1,0 +1,112 @@
+<html>
+<head>
+<title>Formulario Empresa</title>
+<meta charset="utf-8">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.10/dist/htmx.min.js"></script>
+<script src="https://unpkg.com/htmx-ext-json-enc@2.0.1/json-enc.js"></script>
+<style>
+    .htmx-indicator {
+        display: none;
+    }
+
+    .htmx-request .htmx-indicator {
+        display: block;
+    }
+</style>
+    
+</head>
+<body>
+<div class="max-w-4xl mx-auto p-6">
+<a href="/home"
+ class="group inline-flex items-center justify-center
+        w-10 h-10 rounded-full border border-slate-200
+        hover:bg-slate-100 hover:border-slate-300
+        transition-all duration-200 mb-6">
+
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke-width="2"
+    stroke="currentColor"
+    class="w-5 h-5 text-slate-700
+           group-hover:-translate-x-1 transition-transform">
+    <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        d="M15.75 19.5L8.25 12l7.5-7.5" />
+</svg>
+</a>
+
+<h1 class="text-2xl font-bold mb-2">Empresas</h1>
+<p class="text-gray-600 mb-6">
+    Administración de empresas registradas.
+</p>
+
+<form
+    hx-ext="json-enc"
+    hx-post="/empresas/"
+    hx-target="#empresas"
+    hx-swap="beforeend"
+    class="bg-white border rounded-lg p-6 mb-8 shadow-sm">
+
+    <div class="grid gap-4 md:grid-cols-2">
+
+        <div>
+            <label for="name" class="block text-sm font-medium mb-1">
+                Empresa
+            </label>
+            <input
+                id="name"
+                name="name"
+                type="text"
+                placeholder="Acme"
+                class="w-full rounded border px-3 py-2">
+        </div>
+
+        <div>
+            <label for="rfc" class="block text-sm font-medium mb-1">
+                RFC
+            </label>
+            <input
+                id="rfc"
+                name="rfc"
+                type="text"
+                placeholder="ACM123456789"
+                class="w-full rounded border px-3 py-2">
+        </div>
+
+    </div>
+
+    <button
+        type="submit"
+        class="mt-4 rounded bg-slate-800 px-4 py-2 text-white hover:bg-slate-700">
+        Agregar Empresa
+    </button>
+
+</form>
+
+<div class="overflow-x-auto bg-white border rounded-lg shadow-sm">
+    <table class="min-w-full">
+        <thead class="bg-slate-100">
+            <tr>
+                <th class="px-4 py-3 text-left">Empresa</th>
+                <th class="px-4 py-3 text-left">RFC</th>
+                <th colspan=2 class="px-4 py-3 text-left">Acciones</th>
+            </tr>
+        </thead>
+
+        <tbody
+            id="empresas"
+            hx-get="/empresas/"
+            hx-trigger="load"
+            hx-target="this"
+            hx-swap="innerHTML">
+        </tbody>
+    </table>
+</div>
+</div>
+
+</body>
+</html>

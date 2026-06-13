@@ -1,0 +1,13 @@
+[project]
+name = "candidatosrh"
+version = "0.1.0"
+description = "Gestor de Candidatos RH"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "bcrypt>=5.0.0",
+    "fastapi[standard]>=0.136.3",
+    "jinja2>=3.1.6",
+    "jose>=1.0.0",
+    "sqlmodel>=0.0.38",
+]

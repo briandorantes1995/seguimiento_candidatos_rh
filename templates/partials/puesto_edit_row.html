@@ -1,0 +1,53 @@
+<tr id="puesto-{{ puesto.id }}" hx-ext="json-enc">
+<td>
+    <input
+        type="text"
+        name="name"
+        value="{{ puesto.name }}"
+        class="w-full rounded border px-2 py-1">
+</td>
+
+<td>
+    <input
+        type="number"
+        name="salary"
+        value="{{ puesto.salary }}"
+        class="w-full rounded border px-2 py-1">
+</td>
+
+<td>
+    <input
+        type="date"
+        name="stardate"
+        value="{{ puesto.stardate }}"
+        class="w-full rounded border px-2 py-1">
+</td>
+
+
+<td>
+    <input
+        type="date"
+        name="enddate"
+        value="{{ puesto.enddate }}"
+        class="w-full rounded border px-2 py-1">
+</td>
+
+<td>
+    <button
+        class="text-green-600"
+        hx-put="/puestos/{{ puesto.id }}"
+        hx-include="closest tr"
+        hx-target="#puesto-{{ puesto.id }}"
+        hx-swap="outerHTML">
+        Guardar
+    </button>
+
+    <button
+        class="text-gray-600 ml-2"
+        hx-get="/puestos/{{ puesto.id }}"
+        hx-target="#puesto-{{ puesto.id }}"
+        hx-swap="outerHTML">
+        Cancelar
+    </button>
+</td>
+</tr>

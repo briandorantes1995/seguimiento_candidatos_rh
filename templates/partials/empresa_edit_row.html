@@ -1,0 +1,36 @@
+<tr id="empresa-{{ empresa.id }}" hx-ext="json-enc">
+<td>
+    <input
+        type="text"
+        name="name"
+        value="{{ empresa.name }}"
+        class="w-full rounded border px-2 py-1">
+</td>
+
+<td>
+    <input
+        type="text"
+        name="rfc"
+        value="{{ empresa.rfc }}"
+        class="w-full rounded border px-2 py-1">
+</td>
+
+<td>
+    <button
+        class="text-green-600"
+        hx-put="/empresas/{{ empresa.id }}"
+        hx-include="closest tr"
+        hx-target="#empresa-{{ empresa.id }}"
+        hx-swap="outerHTML">
+        Guardar
+    </button>
+
+    <button
+        class="text-gray-600 ml-2"
+        hx-get="/empresas/{{ empresa.id }}"
+        hx-target="#empresa-{{ empresa.id }}"
+        hx-swap="outerHTML">
+        Cancelar
+    </button>
+</td>
+</tr>
