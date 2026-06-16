@@ -1,5 +1,21 @@
 <tr id="puesto-{{ puesto.id }}" hx-ext="json-enc">
 <td>
+<select
+    id="empresa_id"
+    name="empresa_id"
+    class="w-full rounded border px-3 py-2">
+
+    {% for empresa in empresas %}
+    <option
+        value="{{ empresa.id }}"
+        {% if empresa.id == puesto.empresa_id %}selected{% endif %}>
+        {{ empresa.name }}
+    </option>
+    {% endfor %}
+
+</select>
+</td>
+<td>
     <input
         type="text"
         name="name"
@@ -18,8 +34,8 @@
 <td>
     <input
         type="date"
-        name="stardate"
-        value="{{ puesto.stardate }}"
+        name="start_date"
+        value="{{ puesto.start_date }}"
         class="w-full rounded border px-2 py-1">
 </td>
 
@@ -27,8 +43,8 @@
 <td>
     <input
         type="date"
-        name="enddate"
-        value="{{ puesto.enddate }}"
+        name="end_date"
+        value="{{ puesto.end_date }}"
         class="w-full rounded border px-2 py-1">
 </td>
 

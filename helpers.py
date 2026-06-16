@@ -1,5 +1,6 @@
 import uuid
 from fastapi import Depends,Request,Cookie, HTTPException
+from datetime import UTC, datetime
 from db.models  import Usuario,get_session
 from sqlmodel import Session
 from jose import jwt
@@ -11,6 +12,9 @@ ALGORITHM = "HS256"
 def is_htmx(request: Request) -> bool:
     return request.headers.get("HX-Request") is not None
 
+
+def utc_now() -> datetime:
+    return datetime.now(UTC)
 
 
 def get_current_user(access_token: str | None = Cookie(default=None),session: Session = Depends(get_session)):

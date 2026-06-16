@@ -1,0 +1,53 @@
+<tr id="candidato-{{ candidato.id }}" hx-ext="json-enc">
+<td>
+    <input
+        type="text"
+        name="name"
+        value="{{ candidato.name }}"
+        class="w-full rounded border px-2 py-1">
+</td>
+
+<td>
+   <select
+    id="puesto_id"
+    name="puesto_id"
+    class="w-full rounded border px-3 py-2">
+
+    {% for puesto in puestos %}
+    <option
+        value="{{ puesto.id }}"
+        {% if puesto.id == candidato.puesto_id %}selected{% endif %}>
+        {{ puesto.name }}
+    </option>
+    {% endfor %}
+
+</select>
+</td>
+
+<td>
+    <input
+        type="text"
+        name="status"
+        value="{{ candidato.status }}"
+        class="w-full rounded border px-2 py-1">
+</td>
+
+<td>
+    <button
+        class="text-green-600"
+        hx-put="/candidatos/{{ candidato.id }}"
+        hx-include="closest tr"
+        hx-target="#candidato-{{ candidato.id }}"
+        hx-swap="outerHTML">
+        Guardar
+    </button>
+
+    <button
+        class="text-gray-600 ml-2"
+        hx-get="/candidatos/{{ candidato.id }}"
+        hx-target="#candidato-{{ candidato.id }}"
+        hx-swap="outerHTML">
+        Cancelar
+    </button>
+</td>
+</tr>

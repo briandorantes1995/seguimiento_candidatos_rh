@@ -1,7 +1,7 @@
 from fastapi import Depends, FastAPI,Request,HTTPException
 from fastapi.responses import RedirectResponse
 from db.models import Usuario,create_db_and_tables
-from routers import empresa,puesto,candidato,auth
+from routers import empresa,puesto,candidato,auth,entrevista
 from fastapi.templating import Jinja2Templates
 from helpers import get_current_user
 
@@ -12,7 +12,9 @@ templates = Jinja2Templates(directory="templates")
 app.include_router(empresa.router)
 app.include_router(puesto.router)
 app.include_router(candidato.router)
+app.include_router(entrevista.router)
 app.include_router(auth.router)
+
 
 @app.exception_handler(HTTPException)
 async def auth_exception_handler(request: Request, exc: HTTPException):
@@ -25,7 +27,7 @@ async def auth_exception_handler(request: Request, exc: HTTPException):
 def on_startup():
     create_db_and_tables()
 
-@app.get("/")
+@app.get("/health")
 def health():
     return {"Hello": "World"}
 

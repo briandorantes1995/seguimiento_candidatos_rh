@@ -25,7 +25,7 @@ def edit_empresa_form(empresa_id: int,request: Request,session: Session = Depend
 
     return templates.TemplateResponse(
         request=request,
-        name="partials/empresa_edit_row.html",
+        name="partials/empresa/empresa_edit_row.html",
         context={"empresa": empresa}
     ) 
 
@@ -33,7 +33,7 @@ def edit_empresa_form(empresa_id: int,request: Request,session: Session = Depend
 def read_empresas(request: Request,session: Session = Depends(get_session),offset: int = 0,limit: int = Query(default=100, le=100)) -> list[Empresa]:
     empresas = session.exec(select(Empresa).offset(offset).limit(limit)).all()
     if is_htmx(request):
-     return templates.TemplateResponse(request=request,name="partials/empresa_list.html",context={"empresas": empresas},)
+     return templates.TemplateResponse(request=request,name="partials/empresa/empresa_list.html",context={"empresas": empresas},)
     else:
       return empresas
     
@@ -44,7 +44,7 @@ def get_empresa(empresa_id: int,request: Request,session: Session = Depends(get_
     if is_htmx(request):
         return templates.TemplateResponse(
             request=request,
-            name="partials/empresa_row.html",
+            name="partials/empresa/empresa_row.html",
             context={"empresa": empresa}
         )
 
@@ -55,7 +55,7 @@ def get_empresa(empresa_id: int,request: Request,session: Session = Depends(get_
 def create_empresa(empresa: Empresa,request: Request, session: Session = Depends(get_session)) -> Empresa:
     empresa = insert_db_element(session,empresa)
     if is_htmx(request):
-        return templates.TemplateResponse(request=request, name="partials/empresa_row.html", context={"empresa": empresa})
+        return templates.TemplateResponse(request=request, name="partials/empresa/empresa_row.html", context={"empresa": empresa})
     else:
        return empresa
 
@@ -72,7 +72,7 @@ def update_empresa(empresa_id: int,empresa_data: EmpresaUpdate,request: Request,
     if is_htmx(request):
         return templates.TemplateResponse(
             request=request,
-            name="partials/empresa_row.html",
+            name="partials/empresa/empresa_row.html",
             context={"empresa": empresa}
         )
 

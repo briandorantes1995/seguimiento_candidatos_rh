@@ -1,9 +1,9 @@
-<tr class="border-t">
-     <tr id="puesto-{{ puesto.id }}">
+<tr id="puesto-{{ puesto.id }}">
+    <td class="px-4 py-3">{{ puesto.empresa.name }}</td>
     <td class="px-4 py-3">{{ puesto.name }}</td>
     <td class="px-4 py-3">{{ puesto.salary }}</td>
-    <td class="px-4 py-3">{{ puesto.stardate }}</td>
-    <td class="px-4 py-3">{{ puesto.enddate }}</td>
+    <td class="px-4 py-3">{{ puesto.start_date }}</td>
+    <td class="px-4 py-3">{{ puesto.end_date }}</td>
        <td class="px-4 py-3">
         <button
             class="text-blue-600 hover:underline"
@@ -22,5 +22,4 @@
             Eliminar
         </button>
     </td>
-</tr>
 </tr>

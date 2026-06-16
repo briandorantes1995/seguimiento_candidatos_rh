@@ -1,0 +1,23 @@
+    <tr id="entrevista-{{ entrevista.id }}">  
+    <td class="px-4 py-3">{{ entrevista.date}}</td>
+    <td class="px-4 py-3">{{ entrevista.encargado }}</td>
+    <td class="px-4 py-3">{{ entrevista.comentarios }}</td>
+    <td class="px-4 py-3">
+        <button
+            class="text-blue-600 hover:underline"
+            hx-get="/entrevistas/{{ entrevista.id }}/edit"
+            hx-target="#entrevista-{{ entrevista.id }}"
+            hx-swap="outerHTML">
+            Editar
+        </button>
+    </td>
+    <td class="px-4 py-3">
+        <button
+            class="text-blue-600 hover:underline"
+            hx-delete="/entrevistas/{{ entrevista.id }}/"
+            hx-target="#entrevista-{{ entrevista.id }}"
+            hx-swap="outerHTML">
+            Eliminar
+        </button>
+    </td>
+</tr>
