@@ -60,6 +60,7 @@ class PuestoUpdate(SQLModel):
     start_date: date | None = None
     end_date: date | None = None    
 
+
 class Candidato(TimestampMixin, table=True):
     id: int | None = Field(default=None, primary_key=True)
     name: str = Field(index=True)
@@ -99,6 +100,7 @@ class EntrevistaUpdate(SQLModel):
     date: datetime | None = None
     encargado: str | None = None
     comentarios: str | None = None    
+
 
 
 

@@ -1,3 +1,4 @@
+import uuid
 from fastapi import Depends,APIRouter, Query,Request,HTTPException,Response
 from db.models import Candidato,Entrevista,EntrevistaUpdate,EntrevistaCreate, get_session
 from sqlmodel import Session, select
@@ -79,7 +80,7 @@ def update_entrevista(entrevista_id: int,entrevista_data: EntrevistaUpdate,reque
 
 
 @router.delete("/{entrevista_id}")
-def delete_entrevista(entrevista_id: int, request: Request, session: Session = Depends(get_session)):
+def delete_entrevista(entrevista_id: uuid.UUID, request: Request, session: Session = Depends(get_session)):
     entrevista = session.get(Entrevista, entrevista_id)
 
     if not entrevista:
