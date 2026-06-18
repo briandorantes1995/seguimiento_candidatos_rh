@@ -1,15 +1,7 @@
     <tr id="candidato-{{ candidato.id }}">
     <td class="px-4 py-3">{{ candidato.name }}</td>
-    <td class="px-4 py-3">{{ candidato.puesto.name }}</td>
-    <td class="px-4 py-3">{{ candidato.status }}</td>
-    <td class="px-4 py-3">{{ candidato.first_contact }}</td>
-    <td class="px-4 py-3">
-        <a
-        href="/entrevistas/candidato/{{ candidato.id }}"
-        class="text-blue-600 hover:underline">
-        Postulaciones
-    </a>
-    </td>
+    <td class="px-4 py-3">{{ candidato.email }}</td>
+    <td class="px-4 py-3">{{ candidato.telefono }}</td>
     <td class="px-4 py-3">
         <button
             class="text-blue-600 hover:underline"

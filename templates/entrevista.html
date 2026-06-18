@@ -1,6 +1,6 @@
 <html>
 <head>
-<title>Formulario Candidatos</title>
+<title>Entrevistas</title>
 <meta charset="utf-8">
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.10/dist/htmx.min.js"></script>
@@ -18,7 +18,7 @@
 </head>
 <body>
 <div class="max-w-4xl mx-auto p-6">
-<a href="/candidatos/form"
+<a href="/home"
  class="group inline-flex items-center justify-center
         w-10 h-10 rounded-full border border-slate-200
         hover:bg-slate-100 hover:border-slate-300
@@ -39,36 +39,12 @@
 </svg>
 </a>
 
-<h1 class="text-2xl font-bold mb-2">{{ postulacion.candidato.name }}</h1>
+<h1 class="text-2xl font-bold mb-2">Entrevistas</h1>
 <p class="text-gray-600 mb-6">
     Administración de Entrevistas.
 </p>
 
 <div class="max-w-6xl mx-auto p-6">
-
-    <div class="flex justify-between items-center mb-6">
-
-        <div>
-            <h1 class="text-3xl font-bold">
-                {{ postulacion.candidato.name }}
-            </h1>
-            <p class="text-gray-500">
-                {{ postulacion.puesto.name }}
-            </p>
-            <p class="text-gray-500">
-                {{ postulacion.status }}
-            </p>
-        </div>
-
-        <button
-            onclick="openModal()"
-            class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-
-            Nueva Entrevista
-
-        </button>
-
-    </div>
 
   <div class="overflow-x-auto bg-white border rounded-lg shadow-sm">
     <table class="min-w-full">
@@ -81,9 +57,9 @@
                 </tr>
             </thead>
 
-          <tbody
+           <tbody
             id="entrevistas"
-            hx-get="/entrevistas/postulacion/{{ postulacion_id }}"
+            hx-get="/entrevistas/"
             hx-trigger="load"
             hx-target="this"
             hx-swap="innerHTML">
@@ -95,8 +71,5 @@
 
 </div>
 
-{% include "partials/entrevista/entrevista_modal.html" %}
-
 </body>
 </html>
-

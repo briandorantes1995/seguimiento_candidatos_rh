@@ -26,53 +26,26 @@ def read_candidato_form(request: Request):
 
 
 @router.post("/login")
-def login(login_data: Login,session: Session = Depends(get_session)):
-    usuario = session.exec(
-        select(Usuario)
-        .where(Usuario.email == login_data.email)
-    ).first()
+def login(login_data: Login, session: Session = Depends(get_session)):
+    usuario = session.exec(select(Usuario).where(Usuario.email == login_data.email)).first()
 
-    if not usuario:
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid credentials"
+    if not usuario or not bcrypt.checkpw(login_data.password.encode(), usuario.password.encode()):
+        return Response(
+            content="Correo o contraseña incorrectos",
+            media_type="text/html",
+            status_code=200,
+            headers={
+                "HX-Retarget": "#error",
+                "HX-Reswap": "innerHTML"
+            }
         )
 
-    if not bcrypt.checkpw(
-        login_data.password.encode(),
-        usuario.password.encode()
-    ):
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid credentials"
-        )
-
-    payload = {
-        "user_id": str(usuario.id),
-        "user_name": usuario.name
-    }
-
-    token = jwt.encode(
-        payload,
-        SECRET_KEY,
-        algorithm=ALGORITHM
-    )
-
-    response = RedirectResponse(
-        url="/home",
-        status_code=303
-    )
+    payload = {"user_id": str(usuario.id), "user_name": usuario.name}
+    token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
     response = Response(status_code=200)
-
     response.headers["HX-Redirect"] = "/home"
-
-    response.set_cookie(
-        key="access_token",
-        value=token,
-        httponly=True
-    )
-
+    response.set_cookie(key="access_token", value=token, httponly=True)
     return response
 
 
@@ -82,10 +55,7 @@ def register(usuario: Usuario,session: Session = Depends(get_session)) -> Usuari
     existing_user = session.exec(select(Usuario).where(Usuario.email == usuario.email)).first()
 
     if existing_user:
-        raise HTTPException(
-            status_code=400,
-            detail="User already exists"
-        )
+        raise HTTPException( status_code=400,detail="User already exists")
 
     hashed_password = bcrypt.hashpw(usuario.password.encode(), bcrypt.gensalt()).decode()
 

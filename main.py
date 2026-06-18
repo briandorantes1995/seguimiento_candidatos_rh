@@ -1,7 +1,7 @@
 from fastapi import Depends, FastAPI,Request,HTTPException
 from fastapi.responses import RedirectResponse
 from db.models import Usuario,create_db_and_tables
-from routers import empresa,puesto,candidato,auth,entrevista
+from routers import empresa,puesto,candidato,auth,entrevista,postulaciones,user
 from fastapi.templating import Jinja2Templates
 from helpers import get_current_user
 
@@ -12,7 +12,9 @@ templates = Jinja2Templates(directory="templates")
 app.include_router(empresa.router)
 app.include_router(puesto.router)
 app.include_router(candidato.router)
+app.include_router(postulaciones.router)
 app.include_router(entrevista.router)
+app.include_router(user.router)
 app.include_router(auth.router)
 
 

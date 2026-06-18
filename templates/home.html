@@ -1,104 +1,106 @@
 <!DOCTYPE html>
-
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema RH</title>
-
-<script src="https://cdn.tailwindcss.com"></script>
-
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-50 min-h-screen">
-    <nav class="bg-white border-b shadow-sm">
+
+<nav class="bg-white border-b shadow-sm">
     <div class="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
-    <div>
-        <span class="font-semibold text-slate-800">
-            Sistema RH
-        </span>
-    </div>
+        <span class="font-semibold text-slate-800">Sistema RH</span>
 
-    <div class="flex items-center gap-4">
-        <span class="text-sm text-slate-600">
-            {{ user.name }}
-        </span>
-
-        <form action="/auth/logout" method="post">
+        <div class="relative">
             <button
-                type="submit"
-                class="px-3 py-2 rounded-lg bg-red-500 text-white text-sm hover:bg-red-600 transition">
-                Cerrar sesión
+                onclick="document.getElementById('user-menu').classList.toggle('hidden')"
+                class="flex items-center gap-2 text-sm text-slate-700 hover:text-slate-900 px-3 py-2 rounded-lg hover:bg-slate-100 transition">
+                <span>{{ user.name }} -- {{ user.user_type.value }}</span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                </svg>
             </button>
-        </form>
+
+            <div id="user-menu" class="hidden absolute right-0 mt-1 w-48 bg-white border rounded-lg shadow-lg z-10">
+                <a href="/usuarios/perfil"
+                   class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 rounded-t-lg">
+                    Mi Perfil
+                </a>
+                  <a href="/dashboard/"
+                   class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 rounded-t-lg">
+                    Dashboard
+                </a>
+                <form action="/auth/logout" method="post">
+                    <button type="submit"
+                        class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-slate-50 rounded-b-lg">
+                        Cerrar sesión
+                    </button>
+                </form>
+            </div>
+        </div>
     </div>
-
-</div>
 </nav>
+
 <main class="max-w-6xl mx-auto px-6 py-10">
-
     <header class="mb-10">
-        <h1 class="text-4xl font-bold text-slate-900">
-            Sistema de Reclutamiento
-        </h1>
-
-        <p class="mt-2 text-slate-600">
-            Administración de empresas, puestos y candidatos.
-        </p>
+        <h1 class="text-4xl font-bold text-slate-900">Sistema de Reclutamiento</h1>
+        <p class="mt-2 text-slate-600">Administración de empresas, puestos y candidatos.</p>
     </header>
 
     <section class="grid gap-6 md:grid-cols-3">
 
-        <a href="/empresas/form"
-           class="bg-white rounded-xl border p-6 shadow-sm hover:shadow-md transition">
-
-            <h2 class="text-xl font-semibold mb-2">
-                Empresas
-            </h2>
-
-            <p class="text-slate-600 mb-4">
-                Gestiona las empresas registradas.
-            </p>
-
-            <span class="text-sm font-medium text-blue-600">
-                Ver empresas →
-            </span>
+        <a href="/empresas/form" class="bg-white rounded-xl border p-6 shadow-sm hover:shadow-md transition">
+            <h2 class="text-xl font-semibold mb-2">Empresas</h2>
+            <p class="text-slate-600 mb-4">Gestiona las empresas registradas.</p>
+            <span class="text-sm font-medium text-blue-600">Ver empresas →</span>
         </a>
 
-        <a href="/puestos/form"
-           class="bg-white rounded-xl border p-6 shadow-sm hover:shadow-md transition">
-
-            <h2 class="text-xl font-semibold mb-2">
-                Puestos
-            </h2>
-
-            <p class="text-slate-600 mb-4">
-                Administra vacantes y posiciones.
-            </p>
-
-            <span class="text-sm font-medium text-blue-600">
-                Ver puestos →
-            </span>
+        <a href="/puestos/form" class="bg-white rounded-xl border p-6 shadow-sm hover:shadow-md transition">
+            <h2 class="text-xl font-semibold mb-2">Puestos</h2>
+            <p class="text-slate-600 mb-4">Administra vacantes y posiciones.</p>
+            <span class="text-sm font-medium text-blue-600">Ver puestos →</span>
         </a>
 
-        <a href="/candidatos/form"
-           class="bg-white rounded-xl border p-6 shadow-sm hover:shadow-md transition">
-
-            <h2 class="text-xl font-semibold mb-2">
-                Candidatos
-            </h2>
-
-            <p class="text-slate-600 mb-4">
-                Consulta y registra candidatos.
-            </p>
-
-            <span class="text-sm font-medium text-blue-600">
-                Ver candidatos →
-            </span>
+        <a href="/candidatos/form" class="bg-white rounded-xl border p-6 shadow-sm hover:shadow-md transition">
+            <h2 class="text-xl font-semibold mb-2">Candidatos</h2>
+            <p class="text-slate-600 mb-4">Consulta y registra candidatos.</p>
+            <span class="text-sm font-medium text-blue-600">Ver candidatos →</span>
         </a>
+
+        <a href="/postulaciones/form" class="bg-white rounded-xl border p-6 shadow-sm hover:shadow-md transition">
+            <h2 class="text-xl font-semibold mb-2">Postulaciones</h2>
+            <p class="text-slate-600 mb-4">Postula Candidatos.</p>
+            <span class="text-sm font-medium text-blue-600">Ver Postulaciones →</span>
+        </a>
+
+        <a href="/entrevistas/form" class="bg-white rounded-xl border p-6 shadow-sm hover:shadow-md transition">
+            <h2 class="text-xl font-semibold mb-2">Entrevistas</h2>
+            <p class="text-slate-600 mb-4">Entrevistas Realizadas.</p>
+            <span class="text-sm font-medium text-blue-600">Ver Entrevistas →</span>
+        </a>
+
+        {% if user.user_type == "admin" %}
+        <a href="/usuarios/form" class="bg-white rounded-xl border p-6 shadow-sm hover:shadow-md transition">
+            <h2 class="text-xl font-semibold mb-2">Reclutadores/Usuarios</h2>
+            <p class="text-slate-600 mb-4">Informacion Reclutadores</p>
+            <span class="text-sm font-medium text-blue-600">Ver Reclutadores →</span>
+        </a>
+        {% endif %}
 
     </section>
-
 </main>
+
+<script>
+    // Cierra el menú al hacer click fuera
+    document.addEventListener('click', function(e) {
+        const menu = document.getElementById('user-menu');
+        const btn = menu.previousElementSibling;
+        if (!btn.contains(e.target) && !menu.contains(e.target)) {
+            menu.classList.add('hidden');
+        }
+    });
+</script>
 
 </body>
 </html>

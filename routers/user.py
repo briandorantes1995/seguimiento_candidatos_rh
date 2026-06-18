@@ -1,88 +1,81 @@
-from fastapi import Depends,APIRouter, Query,Request
-from db.models import Empresa,Puesto,PuestoUpdate, get_session
+from fastapi import Depends, APIRouter, Request, HTTPException, Response
+from db.models import Usuario, UsuarioUpdate, AdminUpdate, get_session
+from db.crud import update_db_element, delete_db_element
 from sqlmodel import Session, select
+import uuid
 from fastapi.templating import Jinja2Templates
-from helpers import is_htmx
-
+from helpers import is_htmx, get_current_user, get_admin_user
 
 router = APIRouter(
-    prefix="/usuario",
-    tags=["usuario"],
+    prefix="/usuarios",
+    tags=["usuarios"],
     responses={404: {"description": "Not found"}},
 )
 
 templates = Jinja2Templates(directory="templates")
 
-@router.get("/form")
-def read_puesto_form(request: Request,session: Session = Depends(get_session)):
-    empresas = session.exec(select(Empresa)).all()
-    return templates.TemplateResponse(request=request, name="puesto.html" ,context={ "empresas": empresas})
 
-@router.get("/{puesto_id}/edit")
-def edit_puesto_form(puesto_id: int,request: Request,session: Session = Depends(get_session)):
-    puesto = session.get(Puesto, puesto_id)
-
-    return templates.TemplateResponse(
-        request=request,
-        name="partials/puesto_edit_row.html",
-        context={"puesto": puesto}
-    ) 
+@router.get("/perfil")
+def read_perfil(request: Request, current_user: Usuario = Depends(get_current_user)):
+    return templates.TemplateResponse(request=request, name="perfil.html", context={"current_user": current_user})
 
 
-@router.get("/")
-def read_puestos(request: Request,session: Session = Depends(get_session),offset: int = 0,limit: int = Query(default=100, le=100)) -> list[Puesto]:
-    puestos = session.exec(select(Puesto).offset(offset).limit(limit)).all()
+@router.get("/form", dependencies=[Depends(get_admin_user)])
+def read_usuarios_form(request: Request):
+    return templates.TemplateResponse(request=request, name="usuarios.html")
+
+
+@router.get("/", dependencies=[Depends(get_admin_user)])
+def read_usuarios(request: Request, session: Session = Depends(get_session)):
+    usuarios = session.exec(select(Usuario)).all()
     if is_htmx(request):
-     return templates.TemplateResponse(request=request,name="partials/puesto_list.html",context={"puestos": puestos},)
-    else:
-      return puestos
-    
-@router.get("/{puesto_id}")
-def get_puesto(puesto_id: int,request: Request,session: Session = Depends(get_session)):
-    empresa = session.get(Empresa, puesto_id)
+        return templates.TemplateResponse(request=request, name="partials/usuarios/usuario_list.html", context={"usuarios": usuarios})
+    return usuarios
 
+
+@router.get("/{usuario_id}/edit", dependencies=[Depends(get_admin_user)])
+def edit_usuario_form(usuario_id: str, request: Request, session: Session = Depends(get_session)):
+    usuario = session.get(Usuario, uuid.UUID(usuario_id))
+    if not usuario:
+        raise HTTPException(status_code=404)
+    return templates.TemplateResponse(request=request, name="partials/usuarios/usuario_edit_row.html", context={"usuario": usuario})
+
+
+@router.get("/{usuario_id}", dependencies=[Depends(get_admin_user)])
+def get_usuario(usuario_id: str, request: Request, session: Session = Depends(get_session)):
+    usuario = session.get(Usuario, uuid.UUID(usuario_id))
+    if not usuario:
+        raise HTTPException(status_code=404)
     if is_htmx(request):
-        return templates.TemplateResponse(
-            request=request,
-            name="partials/empresa_row.html",
-            context={"empresa": empresa}
-        )
+        return templates.TemplateResponse(request=request, name="partials/usuarios/usuario_row.html", context={"usuario": usuario})
+    return usuario
 
-    return empresa     
-    
-@router.post("/")
-def create_puesto(puesto: Puesto,request: Request, session: Session = Depends(get_session)) -> Puesto:
-    session.add(puesto)
-    session.commit()
-    session.refresh(puesto)
+
+@router.put("/me")
+def update_perfil(usuario_data: UsuarioUpdate, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_current_user)):
+    usuario = update_db_element(session, current_user, usuario_data)
     if is_htmx(request):
-        return templates.TemplateResponse(request=request, name="partials/puesto_row.html", context={"puesto": puesto})
-    else:
-       return puesto
-   
-    
+        return templates.TemplateResponse(request=request, name="partials/usuarios/usuario_perfil.html", context={"usuario": usuario})
+    return usuario
 
-@router.put("/{puesto_id}")
-def update_puesto(puesto_id: int,puesto_data: PuestoUpdate,request: Request,session: Session = Depends(get_session)):
-    puesto = session.get(Puesto, puesto_id)
-    puesto.sqlmodel_update(puesto_data.model_dump(exclude_unset=True))
-    session.add(puesto)
-    session.commit()
-    session.refresh(puesto)
 
+@router.put("/{usuario_id}", dependencies=[Depends(get_admin_user)])
+def update_usuario(usuario_id: str, usuario_data: AdminUpdate, request: Request, session: Session = Depends(get_session)):
+    usuario = session.get(Usuario, uuid.UUID(usuario_id))
+    if not usuario:
+        raise HTTPException(status_code=404)
+    usuario = update_db_element(session, usuario, usuario_data)
     if is_htmx(request):
-        return templates.TemplateResponse(
-            request=request,
-            name="partials/puesto_row.html",
-            context={"empresa": puesto}
-        )
-
-    return puesto
+        return templates.TemplateResponse(request=request, name="partials/usuarios/usuario_row.html", context={"usuario": usuario})
+    return usuario
 
 
-@router.delete("/{puesto_id}")
-def delete_puesto(puesto_id: int,request: Request,session: Session = Depends(get_session)):
-   puesto = session.get(Puesto,puesto_id)
-   session.delete(puesto)
-   session.commit()
-   session.refresh(puesto)    
+@router.delete("/{usuario_id}", dependencies=[Depends(get_admin_user)])
+def delete_usuario(usuario_id: str, request: Request, session: Session = Depends(get_session)):
+    usuario = session.get(Usuario, uuid.UUID(usuario_id))
+    if not usuario:
+        raise HTTPException(status_code=404)
+    delete_db_element(session, usuario)
+    if is_htmx(request):
+        return Response(status_code=204)
+    return {"ok": True}

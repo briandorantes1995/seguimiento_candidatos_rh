@@ -6,32 +6,20 @@
         value="{{ candidato.name }}"
         class="w-full rounded border px-2 py-1">
 </td>
-
-<td>
-   <select
-    id="puesto_id"
-    name="puesto_id"
-    class="w-full rounded border px-3 py-2">
-
-    {% for puesto in puestos %}
-    <option
-        value="{{ puesto.id }}"
-        {% if puesto.id == candidato.puesto_id %}selected{% endif %}>
-        {{ puesto.name }}
-    </option>
-    {% endfor %}
-
-</select>
-</td>
-
 <td>
     <input
-        type="text"
-        name="status"
-        value="{{ candidato.status }}"
+        type="email"
+        name="email"
+        value="{{ candidato.email }}"
         class="w-full rounded border px-2 py-1">
 </td>
-
+<td>
+    <input
+        type="number"
+        name="telefono"
+        value="{{ candidato.telefono }}"
+        class="w-full rounded border px-2 py-1">
+</td>
 <td>
     <button
         class="text-green-600"
