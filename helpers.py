@@ -19,7 +19,7 @@ def delete_response():
 
 
 def with_toast(response: Response, message: str, toast_type: str):
-    response.headers["HX-Trigger-After-Swap"] = json.dumps({"show-toast": {"message": message, "type": toast_type}})
+    response.headers["HX-Trigger"] = json.dumps({"show-toast": {"message": message, "type": toast_type}})
     return response
 
 
