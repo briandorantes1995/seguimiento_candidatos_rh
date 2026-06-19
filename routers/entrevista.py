@@ -1,9 +1,10 @@
 import uuid
 from fastapi import Depends, APIRouter, Query, Request, HTTPException, Response
-from db.models import Candidato, Entrevista, EntrevistaUpdate, EntrevistaCreate, Usuario, DocumentType, get_session
+from db.models import Candidato, Entrevista, EntrevistaUpdate, EntrevistaCreate, Postulacion, Usuario, DocumentType, get_session
 from sqlmodel import Session, select
 from db.crud import delete_db_element, insert_db_element, update_db_element
 from fastapi.templating import Jinja2Templates
+from sqlalchemy.orm import selectinload
 from helpers import is_htmx, get_current_user, check_owner, apply_ownership_filter, delete_response, with_toast
 
 router = APIRouter(
@@ -23,13 +24,14 @@ def read_entrevista_form(request: Request):
 
 @router.get("/postulacion/{postulacion_id}")
 def entrevistas_por_postulacion(postulacion_id: int, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_current_user)):
-    from db.models import Postulacion
     postulacion = session.get(Postulacion, postulacion_id)
     if not postulacion:
         raise HTTPException(status_code=404)
     check_owner(postulacion, current_user)
 
-    query = apply_ownership_filter(select(Entrevista), Entrevista, current_user)
+    query = apply_ownership_filter(select(Entrevista), Entrevista, current_user).options(
+        selectinload(Entrevista.postulacion).selectinload(Postulacion.candidato)
+    )
     entrevistas = session.exec(query.where(Entrevista.postulacion_id == postulacion_id)).all()
 
     if is_htmx(request):
@@ -41,7 +43,9 @@ def entrevistas_por_postulacion(postulacion_id: int, request: Request, session: 
 
 @router.get("/")
 def read_entrevistas(request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_current_user), offset: int = 0, limit: int = Query(default=100, le=100)) -> list[Entrevista]:
-    query = apply_ownership_filter(select(Entrevista), Entrevista, current_user)
+    query = apply_ownership_filter(select(Entrevista), Entrevista, current_user).options(
+        selectinload(Entrevista.postulacion).selectinload(Postulacion.candidato)
+    )
     entrevistas = session.exec(query.offset(offset).limit(limit)).all()
 
     if is_htmx(request):
@@ -60,7 +64,10 @@ def edit_entrevista_form(entrevista_id: uuid.UUID, request: Request, session: Se
 
 @router.get("/{entrevista_id}")
 def get_entrevista(entrevista_id: uuid.UUID, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_current_user)):
-    entrevista = session.get(Entrevista, entrevista_id)
+    query = select(Entrevista).where(Entrevista.id == entrevista_id).options(
+        selectinload(Entrevista.postulacion).selectinload(Postulacion.candidato)
+    )
+    entrevista = session.exec(query).first()
     if not entrevista:
         raise HTTPException(status_code=404)
     check_owner(entrevista, current_user)
@@ -76,6 +83,10 @@ def create_entrevista(entrevista_data: EntrevistaCreate, request: Request, sessi
     entrevista = insert_db_element(session, entrevista)
 
     if is_htmx(request):
+        query = select(Entrevista).where(Entrevista.id == entrevista.id).options(
+            selectinload(Entrevista.postulacion).selectinload(Postulacion.candidato)
+        )
+        entrevista = session.exec(query).first()
         return with_toast(
             templates.TemplateResponse(request=request, name="partials/entrevista/entrevista_row.html", context={"entrevista": entrevista}),
             "Entrevista creada correctamente", "success"
@@ -93,6 +104,10 @@ def update_entrevista(entrevista_id: uuid.UUID, entrevista_data: EntrevistaUpdat
     entrevista = update_db_element(session, entrevista, entrevista_data)
 
     if is_htmx(request):
+        query = select(Entrevista).where(Entrevista.id == entrevista.id).options(
+            selectinload(Entrevista.postulacion).selectinload(Postulacion.candidato)
+        )
+        entrevista = session.exec(query).first()
         return with_toast(
             templates.TemplateResponse(request=request, name="partials/entrevista/entrevista_row.html", context={"entrevista": entrevista}),
             "Entrevista actualizada correctamente", "info"
