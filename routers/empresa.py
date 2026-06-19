@@ -3,7 +3,7 @@ from db.models import Empresa, EmpresaUpdate, EmpresaCreate, Usuario, get_sessio
 from db.crud import delete_db_element, insert_db_element, update_db_element
 from sqlmodel import Session, select
 from fastapi.templating import Jinja2Templates
-from helpers import is_htmx, get_current_user, check_owner, apply_ownership_filter
+from helpers import is_htmx, get_current_user, check_owner, apply_ownership_filter, delete_response, with_toast
 
 router = APIRouter(
     prefix="/empresas",
@@ -58,7 +58,10 @@ def create_empresa(empresa_data: EmpresaCreate, request: Request, session: Sessi
     empresa = insert_db_element(session, empresa)
 
     if is_htmx(request):
-        return templates.TemplateResponse(request=request, name="partials/empresa/empresa_row.html", context={"empresa": empresa})
+        return with_toast(
+            templates.TemplateResponse(request=request, name="partials/empresa/empresa_row.html", context={"empresa": empresa}),
+            "Empresa creada correctamente", "success"
+        )
     return empresa
 
 
@@ -72,7 +75,10 @@ def update_empresa(empresa_id: int, empresa_data: EmpresaUpdate, request: Reques
     empresa = update_db_element(session, empresa, empresa_data)
 
     if is_htmx(request):
-        return templates.TemplateResponse(request=request, name="partials/empresa/empresa_row.html", context={"empresa": empresa})
+        return with_toast(
+            templates.TemplateResponse(request=request, name="partials/empresa/empresa_row.html", context={"empresa": empresa}),
+            "Empresa actualizada correctamente", "info"
+        )
     return empresa
 
 
@@ -86,5 +92,5 @@ def delete_empresa(empresa_id: int, request: Request, session: Session = Depends
     delete_db_element(session, empresa)
 
     if is_htmx(request):
-        return Response(status_code=204)
+        return delete_response()
     return {"ok": True}

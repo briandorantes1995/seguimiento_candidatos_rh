@@ -1,3 +1,13 @@
+{% if error %}
+<div class="bg-red-50 border border-red-200 rounded p-4 text-red-800">
+    {{ error }}
+</div>
+{% elif success %}
+<div class="bg-green-50 border border-green-200 rounded p-4 text-green-800">
+    {{ success }}
+</div>
+{% else %}
 <div class="bg-green-50 border border-green-200 rounded p-4 text-green-800">
     Perfil actualizado: <strong>{{ usuario.name }}</strong>
 </div>
+{% endif %}

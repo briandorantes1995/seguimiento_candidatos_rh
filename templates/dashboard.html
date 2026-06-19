@@ -1,0 +1,139 @@
+<html>
+<head>
+<title>Dashboard</title>
+<meta charset="utf-8">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.10/dist/htmx.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body class="bg-slate-50 min-h-screen">
+
+<div class="max-w-6xl mx-auto p-6">
+
+    <a href="/home"
+       class="group inline-flex items-center justify-center w-10 h-10 rounded-full border border-slate-200 hover:bg-slate-100 hover:border-slate-300 transition-all duration-200 mb-6">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-slate-700 group-hover:-translate-x-1 transition-transform">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+        </svg>
+    </a>
+
+    <h1 class="text-2xl font-bold mb-2">Dashboard</h1>
+    <p class="text-gray-600 mb-6">
+        {% if current_user.user_type.value in ("admin", "owner") %}
+        Métricas globales del sistema.
+        {% else %}
+        Mis métricas.
+        {% endif %}
+    </p>
+
+    <div class="flex gap-4 items-end mb-8 flex-wrap">
+        <div>
+            <label class="block text-sm font-medium mb-1">Desde</label>
+            <input type="date" id="start" name="start"
+                   class="rounded border px-3 py-2 text-sm">
+        </div>
+        <div>
+            <label class="block text-sm font-medium mb-1">Hasta</label>
+            <input type="date" id="end" name="end"
+                   class="rounded border px-3 py-2 text-sm">
+        </div>
+        <div>
+            <button onclick="loadData()"
+                    class="rounded bg-slate-800 px-4 py-2 text-white text-sm hover:bg-slate-700">
+                Filtrar
+            </button>
+        </div>
+    </div>
+
+    <div id="kpi-grid" class="grid gap-4 md:grid-cols-5 mb-8">
+        <div class="bg-white border rounded-lg p-4 shadow-sm text-center">
+            <div class="text-3xl font-bold text-blue-600" id="kpi-candidatos">—</div>
+            <div class="text-sm text-gray-500 mt-1">Candidatos</div>
+        </div>
+        <div class="bg-white border rounded-lg p-4 shadow-sm text-center">
+            <div class="text-3xl font-bold text-green-600" id="kpi-empresas">—</div>
+            <div class="text-sm text-gray-500 mt-1">Empresas</div>
+        </div>
+        <div class="bg-white border rounded-lg p-4 shadow-sm text-center">
+            <div class="text-3xl font-bold text-purple-600" id="kpi-puestos">—</div>
+            <div class="text-sm text-gray-500 mt-1">Puestos</div>
+        </div>
+        <div class="bg-white border rounded-lg p-4 shadow-sm text-center">
+            <div class="text-3xl font-bold text-amber-600" id="kpi-postulaciones">—</div>
+            <div class="text-sm text-gray-500 mt-1">Postulaciones</div>
+        </div>
+        <div class="bg-white border rounded-lg p-4 shadow-sm text-center">
+            <div class="text-3xl font-bold text-rose-600" id="kpi-entrevistas">—</div>
+            <div class="text-sm text-gray-500 mt-1">Entrevistas</div>
+        </div>
+    </div>
+
+    <div class="grid gap-6 md:grid-cols-2 mb-8">
+        <div class="bg-white border rounded-lg p-4 shadow-sm">
+            <h2 class="text-lg font-semibold mb-3">Postulaciones por Estado</h2>
+            <canvas id="statusChart" height="200"></canvas>
+        </div>
+        <div class="bg-white border rounded-lg p-4 shadow-sm">
+            <h2 class="text-lg font-semibold mb-3">Postulaciones por Mes</h2>
+            <canvas id="monthChart" height="200"></canvas>
+        </div>
+    </div>
+
+</div>
+
+<script>
+let statusChart = null;
+let monthChart = null;
+
+function loadData() {
+    const start = document.getElementById('start').value;
+    const end = document.getElementById('end').value;
+    const params = new URLSearchParams();
+    if (start) params.set('start', start);
+    if (end) params.set('end', end);
+
+    fetch('/dashboard/data?' + params.toString())
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById('kpi-candidatos').textContent = data.kpi.candidatos;
+            document.getElementById('kpi-empresas').textContent = data.kpi.empresas;
+            document.getElementById('kpi-puestos').textContent = data.kpi.puestos;
+            document.getElementById('kpi-postulaciones').textContent = data.kpi.postulaciones;
+            document.getElementById('kpi-entrevistas').textContent = data.kpi.entrevistas;
+
+            const colors = ['#3b82f6','#22c55e','#a855f7','#f59e0b','#ef4444','#06b6d4','#ec4899'];
+
+            if (statusChart) statusChart.destroy();
+            statusChart = new Chart(document.getElementById('statusChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: data.statuses.map(s => s.name),
+                    datasets: [{
+                        data: data.statuses.map(s => s.count),
+                        backgroundColor: colors.slice(0, data.statuses.length),
+                    }]
+                },
+                options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+            });
+
+            if (monthChart) monthChart.destroy();
+            monthChart = new Chart(document.getElementById('monthChart'), {
+                type: 'bar',
+                data: {
+                    labels: data.months.map(m => m.month),
+                    datasets: [{
+                        label: 'Postulaciones',
+                        data: data.months.map(m => m.count),
+                        backgroundColor: '#3b82f6',
+                    }]
+                },
+                options: { responsive: true, plugins: { legend: { display: false } } }
+            });
+        });
+}
+
+loadData();
+</script>
+
+</body>
+</html>

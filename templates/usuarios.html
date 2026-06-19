@@ -5,6 +5,10 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.10/dist/htmx.min.js"></script>
 <script src="https://unpkg.com/htmx-ext-json-enc@2.0.1/json-enc.js"></script>
+<style>
+    .htmx-indicator { display: none; }
+    .htmx-request .htmx-indicator { display: block; }
+</style>
 </head>
 <body>
 <div class="max-w-4xl mx-auto p-6">
@@ -17,6 +21,66 @@
     <h1 class="text-2xl font-bold mb-2">Usuarios</h1>
     <p class="text-gray-600 mb-6">Administración de usuarios del sistema.</p>
 
+    {% if current_user.user_type.value == "owner" %}
+    <form
+        hx-ext="json-enc"
+        hx-post="/usuarios/"
+        hx-target="#usuarios"
+        hx-swap="beforeend"
+        class="bg-white border rounded-lg p-6 mb-8 shadow-sm">
+
+        <div class="grid gap-4 md:grid-cols-2">
+
+            <div>
+                <label for="name" class="block text-sm font-medium mb-1">Nombre</label>
+                <input
+                    id="name"
+                    name="name"
+                    type="text"
+                    placeholder="Nombre del usuario"
+                    class="w-full rounded border px-3 py-2">
+            </div>
+
+            <div>
+                <label for="email" class="block text-sm font-medium mb-1">Email</label>
+                <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    placeholder="usuario@ejemplo.com"
+                    class="w-full rounded border px-3 py-2">
+            </div>
+
+            <div>
+                <label for="password" class="block text-sm font-medium mb-1">Contraseña</label>
+                <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    placeholder="••••••••"
+                    class="w-full rounded border px-3 py-2">
+            </div>
+
+            <div>
+                <label for="user_type" class="block text-sm font-medium mb-1">Tipo</label>
+                <select id="user_type" name="user_type" class="w-full rounded border px-3 py-2">
+                    <option value="reclutador">Reclutador</option>
+                    <option value="admin">Admin</option>
+                    <option value="owner">Owner</option>
+                </select>
+            </div>
+
+        </div>
+
+        <button
+            type="submit"
+            class="mt-4 rounded bg-slate-800 px-4 py-2 text-white hover:bg-slate-700">
+            Agregar Usuario
+        </button>
+
+    </form>
+    {% endif %}
+
     <div class="overflow-x-auto bg-white border rounded-lg shadow-sm">
         <table class="min-w-full">
             <thead class="bg-slate-100">
@@ -24,18 +88,41 @@
                     <th class="px-4 py-3 text-left">Nombre</th>
                     <th class="px-4 py-3 text-left">Email</th>
                     <th class="px-4 py-3 text-left">Tipo</th>
-                    <th class="px-4 py-3 text-left">Acciones</th>
+                    <th colspan=2 class="px-4 py-3 text-left">Acciones</th>
                 </tr>
             </thead>
             <tbody
                 id="usuarios"
                 hx-get="/usuarios/"
-                hx-trigger="load"
+                hx-trigger="load, list-changed from:body"
                 hx-target="this"
                 hx-swap="innerHTML">
             </tbody>
         </table>
     </div>
 </div>
+
+<div id="toast" class="fixed top-4 right-4 z-50 hidden text-white px-5 py-3 rounded-lg shadow-lg text-sm font-medium transition-opacity duration-300"></div>
+
+<script>
+    document.addEventListener('show-toast', function(e) {
+        var toast = document.getElementById('toast');
+        var data = e.detail.value;
+        var message = typeof data === 'string' ? data : data.message;
+        var type = typeof data === 'string' ? 'success' : (data.type || 'success');
+        toast.textContent = message;
+        toast.className = 'fixed top-4 right-4 z-50 hidden text-white px-5 py-3 rounded-lg shadow-lg text-sm font-medium transition-opacity duration-300';
+        if (type === 'error') {
+            toast.classList.add('bg-red-600');
+        } else if (type === 'info') {
+            toast.classList.add('bg-blue-600');
+        } else {
+            toast.classList.add('bg-green-600');
+        }
+        toast.classList.remove('hidden');
+        setTimeout(function() { toast.classList.add('hidden'); }, 3000);
+    });
+</script>
+
 </body>
 </html>

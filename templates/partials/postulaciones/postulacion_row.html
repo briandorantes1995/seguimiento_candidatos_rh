@@ -5,10 +5,10 @@
     <td class="px-4 py-3">{{ postulacion.status }}</td>
     <td class="px-4 py-3">
         <a
-        href="/entrevistas/postulacion/{{ postulacion.id }}"
-        class="text-blue-600 hover:underline">
-        Ver Entrevistas
-    </a>
+            href="/entrevistas/postulacion/{{ postulacion.id }}"
+            class="text-green-600 hover:underline">
+            Ver
+        </a>
     </td>
     <td class="px-4 py-3">
         <button
@@ -24,7 +24,8 @@
             class="text-blue-600 hover:underline"
             hx-delete="/postulaciones/{{ postulacion.id }}/"
             hx-target="#postulacion-{{ postulacion.id }}"
-            hx-swap="outerHTML">
+            hx-swap="outerHTML"
+            hx-confirm="¿Está seguro de eliminar?">
             Eliminar
         </button>
     </td>

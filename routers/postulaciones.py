@@ -3,7 +3,7 @@ from db.models import Empresa,Usuario,Candidato,Puesto,Postulacion, PostulacionU
 from db.crud import delete_db_element, insert_db_element, update_db_element
 from sqlmodel import Session, select
 from fastapi.templating import Jinja2Templates
-from helpers import is_htmx, get_current_user, check_owner, apply_ownership_filter
+from helpers import is_htmx, get_current_user, check_owner, apply_ownership_filter, delete_response, with_toast
 
 router = APIRouter(
     prefix="/postulaciones",
@@ -62,7 +62,10 @@ def create_postulacion(postulacion_data: PostulacionCreate, request: Request, se
     postulacion = insert_db_element(session, postulacion)
 
     if is_htmx(request):
-        return templates.TemplateResponse(request=request, name="partials/postulaciones/postulacion_row.html", context={"postulacion": postulacion})
+        return with_toast(
+            templates.TemplateResponse(request=request, name="partials/postulaciones/postulacion_row.html", context={"postulacion": postulacion}),
+            "Postulación creada correctamente", "success"
+        )
     return postulacion
 
 
@@ -76,7 +79,10 @@ def update_postulacion(postulacion_id: int, postulacion_data: PostulacionUpdate,
     postulacion = update_db_element(session, postulacion, postulacion_data)
 
     if is_htmx(request):
-        return templates.TemplateResponse(request=request, name="partials/postulaciones/postulacion_row.html", context={"postulacion": postulacion})
+        return with_toast(
+            templates.TemplateResponse(request=request, name="partials/postulaciones/postulacion_row.html", context={"postulacion": postulacion}),
+            "Postulación actualizada correctamente", "info"
+        )
     return postulacion
 
 
@@ -90,5 +96,5 @@ def delete_postulacion(postulacion_id: int, request: Request, session: Session =
     delete_db_element(session, postulacion)
 
     if is_htmx(request):
-        return Response(status_code=204)
+        return delete_response()
     return {"ok": True}

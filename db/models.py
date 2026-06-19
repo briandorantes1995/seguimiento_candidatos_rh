@@ -1,8 +1,12 @@
+import os
 import uuid
 from datetime import UTC, datetime, date
+from dotenv import load_dotenv
 from pydantic import field_validator
 from sqlmodel import Field, Relationship, Session, SQLModel, create_engine
 from enum import Enum
+
+load_dotenv()
 
 
 def utc_now() -> datetime:
@@ -10,8 +14,23 @@ def utc_now() -> datetime:
 
 
 class UserType(str, Enum):
+    OWNER = "owner"
     ADMIN = "admin"
     RECRUITER = "reclutador"
+
+class DocumentType(str, Enum):
+    CURP = "CURP"
+    ACTA_NACIMIENTO = "Acta de Nacimiento" 
+    INE = "INE"
+    COMPROBANTE_DOMICILIO ="Comprobante de Domicilio"
+    RFC = "RFC"
+    NSS= "NSS"
+    ESTADO_CUENTA= "Estado de Cuenta"
+    COMPROBANTE_ESTUDIOS="Comprobante de Estudios"
+    INE_FAMILIAR= "Ine de un Familiar"
+    COMPROBANTE_DOMICILIO_FAMILIAR="Comprobante de Domicilio de un Familiar"
+    CARTA_ANTECEDENTES="Carta de no Antecedentes Penales"
+    LICENCIA ="Permiso de Conducir"
 
 
 class TimestampMixin(SQLModel):
@@ -43,10 +62,23 @@ class UsuarioUpdate(SQLModel):
     avatar: str | None = None
 
 
+class UsuarioCreate(SQLModel):
+    name: str
+    email: str
+    password: str
+    user_type: UserType = UserType.RECRUITER
+
+
+class PasswordChange(SQLModel):
+    current_password: str
+    new_password: str
+
+
 class AdminUpdate(SQLModel):
     name: str | None = None
     email: str | None = None
     user_type: UserType | None = None
+    password: str | None = None
 
 
 class Login(SQLModel):
@@ -119,6 +151,7 @@ class Candidato(TimestampMixin, table=True):
     telefono: str | None = Field(default=None, index=True)
     created_by: uuid.UUID = Field(foreign_key="usuario.id")
     postulaciones: list["Postulacion"] = Relationship(back_populates="candidato", cascade_delete=True)
+    papeleria: list["Papeleria"] = Relationship(back_populates="candidato", cascade_delete=True)
 
 
 class CandidatoCreate(SQLModel):
@@ -194,15 +227,52 @@ class EntrevistaUpdate(SQLModel):
     comentarios: str | None = None
 
 
+
+# ---------------------------------------------------------------------------
+# Papeleria
+# ---------------------------------------------------------------------------
+
+class Papeleria(TimestampMixin, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    document_type: DocumentType
+    file_name: str
+    file_url: str
+    created_by: uuid.UUID = Field(foreign_key="usuario.id")
+    candidato_id: int = Field(foreign_key="candidato.id", ondelete="CASCADE")
+    candidato: Candidato | None = Relationship(back_populates="papeleria")
+
+
+class PapeleriaCreate(SQLModel):
+    candidato_id: int
+    document_type: DocumentType
+    file_name: str
+    file_url: str
+
+
+class PapeleriaUpdate(SQLModel):
+    document_type: DocumentType | None = None
+    file_name: str | None = None
+    file_url: str | None = None
+
+
 # ---------------------------------------------------------------------------
 # DB
 # ---------------------------------------------------------------------------
 
-sqlite_file_name = "database.db"
-sqlite_url = f"sqlite:///{sqlite_file_name}"
+DATABASE_URL = os.getenv("DATABASE_URL")
 
-connect_args = {"check_same_thread": False}
-engine = create_engine(sqlite_url, connect_args=connect_args)
+if DATABASE_URL:
+    engine = create_engine(
+        DATABASE_URL,
+        pool_size=2,
+        max_overflow=0,
+        pool_pre_ping=True,
+        connect_args={"options": "-c prepared_statement_cache_size=0"},
+    )
+else:
+    sqlite_file_name = "database.db"
+    sqlite_url = f"sqlite:///{sqlite_file_name}"
+    engine = create_engine(sqlite_url, connect_args={"check_same_thread": False})
 
 
 def create_db_and_tables():

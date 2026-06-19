@@ -3,7 +3,7 @@ from db.models import Empresa, Puesto, PuestoUpdate, PuestoCreate, Usuario, get_
 from db.crud import delete_db_element, insert_db_element, update_db_element
 from sqlmodel import Session, select
 from fastapi.templating import Jinja2Templates
-from helpers import is_htmx, get_current_user, check_owner, apply_ownership_filter
+from helpers import is_htmx, get_current_user, check_owner, apply_ownership_filter, delete_response, with_toast
 
 router = APIRouter(
     prefix="/puestos",
@@ -60,7 +60,10 @@ def create_puesto(puesto_data: PuestoCreate, request: Request, session: Session 
     puesto = insert_db_element(session, puesto)
 
     if is_htmx(request):
-        return templates.TemplateResponse(request=request, name="partials/puesto/puesto_row.html", context={"puesto": puesto})
+        return with_toast(
+            templates.TemplateResponse(request=request, name="partials/puesto/puesto_row.html", context={"puesto": puesto}),
+            "Puesto creado correctamente", "success"
+        )
     return puesto
 
 
@@ -74,7 +77,10 @@ def update_puesto(puesto_id: int, puesto_data: PuestoUpdate, request: Request, s
     puesto = update_db_element(session, puesto, puesto_data)
 
     if is_htmx(request):
-        return templates.TemplateResponse(request=request, name="partials/puesto/puesto_row.html", context={"puesto": puesto})
+        return with_toast(
+            templates.TemplateResponse(request=request, name="partials/puesto/puesto_row.html", context={"puesto": puesto}),
+            "Puesto actualizado correctamente", "info"
+        )
     return puesto
 
 
@@ -88,5 +94,5 @@ def delete_puesto(puesto_id: int, request: Request, session: Session = Depends(g
     delete_db_element(session, puesto)
 
     if is_htmx(request):
-        return Response(status_code=204)
+        return delete_response()
     return {"ok": True}

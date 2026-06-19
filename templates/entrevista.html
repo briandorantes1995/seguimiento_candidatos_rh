@@ -60,7 +60,7 @@
            <tbody
             id="entrevistas"
             hx-get="/entrevistas/"
-            hx-trigger="load"
+            hx-trigger="load, list-changed from:body"
             hx-target="this"
             hx-swap="innerHTML">
         </tbody>
@@ -70,6 +70,28 @@
     </div>
 
 </div>
+
+<div id="toast" class="fixed top-4 right-4 z-50 hidden text-white px-5 py-3 rounded-lg shadow-lg text-sm font-medium transition-opacity duration-300"></div>
+
+<script>
+    document.addEventListener('show-toast', function(e) {
+        var toast = document.getElementById('toast');
+        var data = e.detail.value;
+        var message = typeof data === 'string' ? data : data.message;
+        var type = typeof data === 'string' ? 'success' : (data.type || 'success');
+        toast.textContent = message;
+        toast.className = 'fixed top-4 right-4 z-50 hidden text-white px-5 py-3 rounded-lg shadow-lg text-sm font-medium transition-opacity duration-300';
+        if (type === 'error') {
+            toast.classList.add('bg-red-600');
+        } else if (type === 'info') {
+            toast.classList.add('bg-blue-600');
+        } else {
+            toast.classList.add('bg-green-600');
+        }
+        toast.classList.remove('hidden');
+        setTimeout(function() { toast.classList.add('hidden'); }, 3000);
+    });
+</script>
 
 </body>
 </html>

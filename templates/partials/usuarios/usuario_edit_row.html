@@ -9,19 +9,24 @@
     </td>
     <td class="px-4 py-3">
         <select name="user_type" class="w-full rounded border px-2 py-1">
-            <option value="ADMIN" {% if usuario.user_type == "ADMIN" %}selected{% endif %}>Admin</option>
-            <option value="RECRUITER" {% if usuario.user_type == "RECRUITER" %}selected{% endif %}>Recruiter</option>
+            <option value="owner" {% if usuario.user_type.value == "owner" %}selected{% endif %}>Owner</option>
+            <option value="admin" {% if usuario.user_type.value == "admin" %}selected{% endif %}>Admin</option>
+            <option value="reclutador" {% if usuario.user_type.value == "reclutador" %}selected{% endif %}>Reclutador</option>
         </select>
     </td>
     <td class="px-4 py-3">
-        <button class="text-green-600"
+        <input type="password" name="password" placeholder="Nueva contraseña"
+            class="w-full rounded border px-2 py-1 text-sm">
+    </td>
+    <td class="px-4 py-3">
+        <button class="text-green-600 hover:underline"
             hx-put="/usuarios/{{ usuario.id }}"
             hx-include="closest tr"
             hx-target="#usuario-{{ usuario.id }}"
             hx-swap="outerHTML">
             Guardar
         </button>
-        <button class="text-gray-600 ml-2"
+        <button class="text-gray-600 hover:underline ml-2"
             hx-get="/usuarios/{{ usuario.id }}"
             hx-target="#usuario-{{ usuario.id }}"
             hx-swap="outerHTML">

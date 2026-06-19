@@ -1,0 +1,33 @@
+<tr id="doc-{{ doc.id }}" hx-encoding="multipart/form-data">
+    <td class="px-4 py-3">
+        <select name="document_type" class="w-full rounded border px-2 py-1">
+            {% for dt in document_types %}
+            <option value="{{ dt.value }}" {% if doc.document_type == dt %}selected{% endif %}>{{ dt.value }}</option>
+            {% endfor %}
+        </select>
+    </td>
+    <td class="px-4 py-3">
+        <input type="file" name="file" class="w-full text-sm file:mr-3 file:rounded file:border-0 file:bg-slate-100 file:px-3 file:py-1 file:text-sm file:font-medium hover:file:bg-slate-200">
+        <p class="text-xs text-gray-400 mt-1">Actual: {{ doc.file_name }}</p>
+    </td>
+    <td class="px-4 py-3">
+        <a href="{{ doc.file_url }}" target="_blank" class="text-blue-600 hover:underline">Ver</a>
+    </td>
+    <td colspan="2" class="px-4 py-3">
+        <button
+            class="text-green-600 hover:underline"
+            hx-put="/papeleria/{{ doc.id }}/replace"
+            hx-include="closest tr"
+            hx-target="#doc-{{ doc.id }}"
+            hx-swap="outerHTML">
+            Guardar
+        </button>
+        <button
+            class="text-gray-600 hover:underline ml-2"
+            hx-get="/papeleria/{{ doc.id }}"
+            hx-target="#doc-{{ doc.id }}"
+            hx-swap="outerHTML">
+            Cancelar
+        </button>
+    </td>
+</tr>

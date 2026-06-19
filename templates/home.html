@@ -16,7 +16,14 @@
             <button
                 onclick="document.getElementById('user-menu').classList.toggle('hidden')"
                 class="flex items-center gap-2 text-sm text-slate-700 hover:text-slate-900 px-3 py-2 rounded-lg hover:bg-slate-100 transition">
-                <span>{{ user.name }} -- {{ user.user_type.value }}</span>
+                {% if user.avatar %}
+                <img src="{{ user.avatar }}" class="w-7 h-7 rounded-full object-cover">
+                {% else %}
+                <div class="w-7 h-7 rounded-full bg-slate-300 flex items-center justify-center text-xs font-semibold text-slate-600">
+                    {{ user.name[0] | upper }}
+                </div>
+                {% endif %}
+                <span>{{ user.name }} -- {{ {'admin': 'Admin', 'reclutador': 'Reclutador', 'owner': 'Dueño'}.get(user.user_type.value, user.user_type.value) }}</span>
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
                 </svg>
@@ -80,7 +87,7 @@
             <span class="text-sm font-medium text-blue-600">Ver Entrevistas →</span>
         </a>
 
-        {% if user.user_type == "admin" %}
+        {% if user.user_type.value in ("admin", "owner") %}
         <a href="/usuarios/form" class="bg-white rounded-xl border p-6 shadow-sm hover:shadow-md transition">
             <h2 class="text-xl font-semibold mb-2">Reclutadores/Usuarios</h2>
             <p class="text-slate-600 mb-4">Informacion Reclutadores</p>

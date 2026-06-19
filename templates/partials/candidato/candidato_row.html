@@ -16,7 +16,8 @@
             class="text-blue-600 hover:underline"
             hx-delete="/candidatos/{{ candidato.id }}/"
             hx-target="#candidato-{{ candidato.id }}"
-            hx-swap="outerHTML">
+            hx-swap="outerHTML"
+            hx-confirm="¿Está seguro de eliminar?">
             Eliminar
         </button>
     </td>

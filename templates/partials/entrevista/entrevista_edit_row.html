@@ -1,40 +1,38 @@
 <tr id="entrevista-{{ entrevista.id }}" hx-ext="json-enc">
-<td>
+<td class="px-4 py-3">
     <input
         type="date"
         name="date"
         value="{{ entrevista.date }}"
         class="w-full rounded border px-2 py-1">
 </td>
-<td>
+<td class="px-4 py-3">
     <input
         type="text"
         name="encargado"
         value="{{ entrevista.encargado }}"
         class="w-full rounded border px-2 py-1">
 </td>
-<td>
+<td class="px-4 py-3">
     <textarea
-        type="text"
         name="comentarios"
-        value="{{ entrevista.comentarios }}"
-        class="w-full rounded border px-2 py-1">
+        class="w-full rounded border px-2 py-1">{{ entrevista.comentarios }}</textarea>
 </td>
 
-<td>
+<td colspan="2" class="px-4 py-3">
     <button
-        class="text-green-600"
-        hx-put="/candidatos/{{ candidato.id }}"
+        class="text-green-600 hover:underline"
+        hx-put="/entrevistas/{{ entrevista.id }}"
         hx-include="closest tr"
-        hx-target="#candidato-{{ candidato.id }}"
+        hx-target="#entrevista-{{entrevista.id }}"
         hx-swap="outerHTML">
         Guardar
     </button>
 
     <button
-        class="text-gray-600 ml-2"
-        hx-get="/candidatos/{{ candidato.id }}"
-        hx-target="#candidato-{{ candidato.id }}"
+        class="text-gray-600 hover:underline ml-2"
+        hx-get="/entrevistas/{{ entrevista.id }}"
+        hx-target="#entrevista-{{ entrevista.id }}"
         hx-swap="outerHTML">
         Cancelar
     </button>
