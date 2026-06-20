@@ -1,0 +1,34 @@
+version: "3.8"
+services:
+  email-analyzer:
+    image: ghcr.io/briandorantes1995/analizadorpishing:latest
+    container_name: rh
+    restart: always
+    networks:
+      - internal
+
+  caddy:
+    image: caddy:latest
+    container_name: caddy
+    restart: always
+
+    ports:
+      - "80:80"
+      - "443:443"
+
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+
+    depends_on:
+      - email-analyzer
+    networks:
+      - internal
+
+volumes:
+  caddy_data:
+  caddy_config:
+    
+networks:
+   internal:  
