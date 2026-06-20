@@ -3,6 +3,7 @@ from db.models import Papeleria, PapeleriaCreate, PapeleriaUpdate, Candidato, Us
 from db.crud import delete_db_element, insert_db_element, update_db_element
 from sqlmodel import Session, select
 from fastapi.templating import Jinja2Templates
+from fastapi_csrf_protect import CsrfProtect
 from helpers import is_htmx, get_current_user, check_owner, apply_ownership_filter, delete_response, with_toast, utc_now
 from supabase_helper import upload_document, delete_document
 import uuid
@@ -18,7 +19,7 @@ templates = Jinja2Templates(directory="templates")
 
 
 @router.get("/candidato/{candidato_id}")
-def papeleria_por_candidato(candidato_id: int, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_current_user)):
+async def papeleria_por_candidato(candidato_id: int, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_current_user), csrf_protect: CsrfProtect = Depends()):
     candidato = session.get(Candidato, candidato_id)
     if not candidato:
         raise HTTPException(status_code=404)
@@ -30,7 +31,8 @@ def papeleria_por_candidato(candidato_id: int, request: Request, session: Sessio
     if is_htmx(request):
         return templates.TemplateResponse(request=request, name="partials/papeleria/papeleria_list.html", context={"papeleria": papeleria})
 
-    return templates.TemplateResponse(request=request, name="papeleria.html", context={"candidato": candidato, "papeleria": papeleria, "document_types": document_types})
+    csrf_token = csrf_protect.generate_csrf()
+    return templates.TemplateResponse(request=request, name="papeleria.html", context={"candidato": candidato, "papeleria": papeleria, "document_types": document_types, "csrf_token": csrf_token})
 
 
 @router.post("/upload")
@@ -41,7 +43,9 @@ async def upload_papeleria(
     request: Request = None,
     session: Session = Depends(get_session),
     current_user: Usuario = Depends(get_current_user),
+    csrf_protect: CsrfProtect = Depends(),
 ):
+    await csrf_protect.validate_csrf(request)
     candidato = session.get(Candidato, candidato_id)
     if not candidato:
         raise HTTPException(status_code=404)
@@ -70,13 +74,14 @@ async def upload_papeleria(
 
 
 @router.get("/{papeleria_id}/edit")
-def edit_papeleria_form(papeleria_id: str, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_current_user)):
+async def edit_papeleria_form(papeleria_id: str, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_current_user), csrf_protect: CsrfProtect = Depends()):
     papeleria = session.get(Papeleria, uuid.UUID(papeleria_id))
     if not papeleria:
         raise HTTPException(status_code=404)
     check_owner(papeleria, current_user)
     document_types = list(DocumentType)
-    return templates.TemplateResponse(request=request, name="partials/papeleria/papeleria_edit_row.html", context={"doc": papeleria, "document_types": document_types})
+    csrf_token = csrf_protect.generate_csrf()
+    return templates.TemplateResponse(request=request, name="partials/papeleria/papeleria_edit_row.html", context={"doc": papeleria, "document_types": document_types, "csrf_token": csrf_token})
 
 
 @router.get("/{papeleria_id}")
@@ -99,7 +104,9 @@ async def replace_papeleria(
     request: Request = None,
     session: Session = Depends(get_session),
     current_user: Usuario = Depends(get_current_user),
+    csrf_protect: CsrfProtect = Depends(),
 ):
+    await csrf_protect.validate_csrf(request)
     papeleria = session.get(Papeleria, uuid.UUID(papeleria_id))
     if not papeleria:
         raise HTTPException(status_code=404)
@@ -127,7 +134,8 @@ async def replace_papeleria(
 
 
 @router.post("/")
-def create_papeleria(papeleria_data: PapeleriaCreate, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_current_user)):
+async def create_papeleria(papeleria_data: PapeleriaCreate, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_current_user), csrf_protect: CsrfProtect = Depends()):
+    await csrf_protect.validate_csrf(request)
     papeleria = Papeleria(**papeleria_data.model_dump(), created_by=current_user.id)
     papeleria = insert_db_element(session, papeleria)
 
@@ -140,7 +148,8 @@ def create_papeleria(papeleria_data: PapeleriaCreate, request: Request, session:
 
 
 @router.put("/{papeleria_id}")
-def update_papeleria(papeleria_id: str, papeleria_data: PapeleriaUpdate, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_current_user)):
+async def update_papeleria(papeleria_id: str, papeleria_data: PapeleriaUpdate, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_current_user), csrf_protect: CsrfProtect = Depends()):
+    await csrf_protect.validate_csrf(request)
     papeleria = session.get(Papeleria, uuid.UUID(papeleria_id))
     if not papeleria:
         raise HTTPException(status_code=404)
@@ -157,7 +166,8 @@ def update_papeleria(papeleria_id: str, papeleria_data: PapeleriaUpdate, request
 
 
 @router.delete("/{papeleria_id}")
-def delete_papeleria(papeleria_id: str, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_current_user)):
+async def delete_papeleria(papeleria_id: str, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_current_user), csrf_protect: CsrfProtect = Depends()):
+    await csrf_protect.validate_csrf(request)
     papeleria = session.get(Papeleria, uuid.UUID(papeleria_id))
     if not papeleria:
         raise HTTPException(status_code=404)

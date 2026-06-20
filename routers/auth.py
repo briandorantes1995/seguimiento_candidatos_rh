@@ -1,14 +1,18 @@
 import bcrypt
+import os
 from jose import jwt
-from fastapi import Depends,APIRouter, Query,Request,HTTPException,Response
+from fastapi import Depends,APIRouter,Request,HTTPException,Response
 from fastapi.responses import RedirectResponse
 from db.models import Usuario,Login, get_session
 from sqlmodel import Session, select
 from fastapi.templating import Jinja2Templates
-from helpers import is_htmx
+from fastapi_csrf_protect import CsrfProtect
+from db.crud import insert_db_element
+from dotenv import load_dotenv
 
+load_dotenv()
 
-SECRET_KEY = "supersecret"
+JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 ALGORITHM = "HS256"
 
 router = APIRouter(
@@ -21,12 +25,19 @@ templates = Jinja2Templates(directory="templates")
 
 
 @router.get("/")
-def read_candidato_form(request: Request):
-    return templates.TemplateResponse(request=request, name="login.html")
+def read_candidato_form(request: Request,csrf_protect: CsrfProtect = Depends()):
+    csrf_token, signed_token = csrf_protect.generate_csrf_tokens()
+
+    response = templates.TemplateResponse(request=request,name="login.html",context={"csrf_token": csrf_token})
+
+    csrf_protect.set_csrf_cookie(signed_token, response)
+
+    return response
 
 
 @router.post("/login")
-def login(login_data: Login, session: Session = Depends(get_session)):
+async def login( request: Request,login_data: Login, csrf_protect: CsrfProtect = Depends(),session: Session = Depends(get_session)):
+    await csrf_protect.validate_csrf(request)
     usuario = session.exec(select(Usuario).where(Usuario.email == login_data.email)).first()
 
     if not usuario or not bcrypt.checkpw(login_data.password.encode(), usuario.password.encode()):
@@ -41,7 +52,7 @@ def login(login_data: Login, session: Session = Depends(get_session)):
         )
 
     payload = {"user_id": str(usuario.id), "user_name": usuario.name}
-    token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+    token = jwt.encode(payload, JWT_SECRET_KEY, algorithm=ALGORITHM)
 
     response = Response(status_code=200)
     response.headers["HX-Redirect"] = "/home"
@@ -61,9 +72,7 @@ def register(usuario: Usuario,session: Session = Depends(get_session)) -> Usuari
 
     usuario.password = hashed_password
 
-    session.add(usuario)
-    session.commit()
-    session.refresh(usuario)
+    insert_db_element(usuario)
 
     return usuario
 

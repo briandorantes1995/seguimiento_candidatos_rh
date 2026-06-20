@@ -24,6 +24,8 @@
         hx-swap="innerHTML"
         class="bg-white border rounded-lg p-6 mb-8 shadow-sm">
 
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
         <div class="grid gap-4 md:grid-cols-2">
             <div>
                 <label for="name" class="block text-sm font-medium mb-1">Nombre</label>
@@ -50,6 +52,8 @@
         hx-target="#perfil-result"
         hx-swap="innerHTML"
         class="bg-white border rounded-lg p-6 mb-8 shadow-sm">
+
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
 
         <div class="flex items-center gap-6">
             <div class="shrink-0">
@@ -91,6 +95,8 @@
         hx-target="#password-result"
         hx-swap="innerHTML"
         class="bg-white border rounded-lg p-6 mb-8 shadow-sm">
+
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
 
         <div class="grid gap-4 md:grid-cols-2">
 

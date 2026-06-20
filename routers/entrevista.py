@@ -5,6 +5,7 @@ from sqlmodel import Session, select
 from db.crud import delete_db_element, insert_db_element, update_db_element
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import selectinload
+from fastapi_csrf_protect import CsrfProtect
 from helpers import is_htmx, get_current_user, check_owner, apply_ownership_filter, delete_response, with_toast
 
 router = APIRouter(
@@ -18,12 +19,13 @@ templates = Jinja2Templates(directory="templates")
 
 
 @router.get("/form")
-def read_entrevista_form(request: Request):
-    return templates.TemplateResponse(request=request, name="entrevista.html")
+async def read_entrevista_form(request: Request, csrf_protect: CsrfProtect = Depends()):
+    csrf_token = csrf_protect.generate_csrf()
+    return templates.TemplateResponse(request=request, name="entrevista.html", context={"csrf_token": csrf_token})
 
 
 @router.get("/postulacion/{postulacion_id}")
-def entrevistas_por_postulacion(postulacion_id: int, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_current_user)):
+async def entrevistas_por_postulacion(postulacion_id: int, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_current_user), csrf_protect: CsrfProtect = Depends()):
     postulacion = session.get(Postulacion, postulacion_id)
     if not postulacion:
         raise HTTPException(status_code=404)
@@ -38,7 +40,8 @@ def entrevistas_por_postulacion(postulacion_id: int, request: Request, session: 
         return templates.TemplateResponse(request=request, name="partials/entrevista/entrevista_list.html", context={"entrevistas": entrevistas})
 
     document_types = list(DocumentType)
-    return templates.TemplateResponse(request=request, name="candidato.html", context={"postulacion": postulacion, "postulacion_id": postulacion_id, "document_types": document_types})
+    csrf_token = csrf_protect.generate_csrf()
+    return templates.TemplateResponse(request=request, name="candidato.html", context={"postulacion": postulacion, "postulacion_id": postulacion_id, "document_types": document_types, "csrf_token": csrf_token})
 
 
 @router.get("/")
@@ -54,12 +57,13 @@ def read_entrevistas(request: Request, session: Session = Depends(get_session), 
 
 
 @router.get("/{entrevista_id}/edit")
-def edit_entrevista_form(entrevista_id: uuid.UUID, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_current_user)):
+async def edit_entrevista_form(entrevista_id: uuid.UUID, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_current_user), csrf_protect: CsrfProtect = Depends()):
     entrevista = session.get(Entrevista, entrevista_id)
     if not entrevista:
         raise HTTPException(status_code=404)
     check_owner(entrevista, current_user)
-    return templates.TemplateResponse(request=request, name="partials/entrevista/entrevista_edit_row.html", context={"entrevista": entrevista})
+    csrf_token = csrf_protect.generate_csrf()
+    return templates.TemplateResponse(request=request, name="partials/entrevista/entrevista_edit_row.html", context={"entrevista": entrevista, "csrf_token": csrf_token})
 
 
 @router.get("/{entrevista_id}")
@@ -78,7 +82,8 @@ def get_entrevista(entrevista_id: uuid.UUID, request: Request, session: Session 
 
 
 @router.post("/")
-def create_entrevista(entrevista_data: EntrevistaCreate, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_current_user)) -> Entrevista:
+async def create_entrevista(entrevista_data: EntrevistaCreate, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_current_user), csrf_protect: CsrfProtect = Depends()):
+    await csrf_protect.validate_csrf(request)
     entrevista = Entrevista(**entrevista_data.model_dump(), created_by=current_user.id)
     entrevista = insert_db_element(session, entrevista)
 
@@ -95,7 +100,8 @@ def create_entrevista(entrevista_data: EntrevistaCreate, request: Request, sessi
 
 
 @router.put("/{entrevista_id}")
-def update_entrevista(entrevista_id: uuid.UUID, entrevista_data: EntrevistaUpdate, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_current_user)):
+async def update_entrevista(entrevista_id: uuid.UUID, entrevista_data: EntrevistaUpdate, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_current_user), csrf_protect: CsrfProtect = Depends()):
+    await csrf_protect.validate_csrf(request)
     entrevista = session.get(Entrevista, entrevista_id)
     if not entrevista:
         raise HTTPException(status_code=404)
@@ -116,7 +122,8 @@ def update_entrevista(entrevista_id: uuid.UUID, entrevista_data: EntrevistaUpdat
 
 
 @router.delete("/{entrevista_id}")
-def delete_entrevista(entrevista_id: uuid.UUID, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_current_user)):
+async def delete_entrevista(entrevista_id: uuid.UUID, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_current_user), csrf_protect: CsrfProtect = Depends()):
+    await csrf_protect.validate_csrf(request)
     entrevista = session.get(Entrevista, entrevista_id)
     if not entrevista:
         raise HTTPException(status_code=404)

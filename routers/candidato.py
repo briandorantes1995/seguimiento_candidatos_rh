@@ -3,6 +3,7 @@ from db.models import Candidato, CandidatoUpdate, CandidatoCreate, Usuario, get_
 from sqlmodel import Session, select
 from db.crud import delete_db_element, insert_db_element, update_db_element
 from fastapi.templating import Jinja2Templates
+from fastapi_csrf_protect import CsrfProtect
 from helpers import is_htmx, get_current_user, check_owner, apply_ownership_filter, delete_response, with_toast
 
 router = APIRouter(
@@ -16,18 +17,20 @@ templates = Jinja2Templates(directory="templates")
 
 
 @router.get("/form")
-def read_candidato_form(request: Request):
-    return templates.TemplateResponse(request=request, name="candidatos.html")
+async def read_candidato_form(request: Request, csrf_protect: CsrfProtect = Depends()):
+    csrf_token = csrf_protect.generate_csrf()
+    return templates.TemplateResponse(request=request, name="candidatos.html", context={"csrf_token": csrf_token})
 
 
 @router.get("/{candidato_id}/edit")
-def edit_candidato_form(candidato_id: int, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_current_user)):
+async def edit_candidato_form(candidato_id: int, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_current_user), csrf_protect: CsrfProtect = Depends()):
     candidato = session.get(Candidato, candidato_id)
     if not candidato:
         raise HTTPException(status_code=404)
     check_owner(candidato, current_user)
 
-    return templates.TemplateResponse(request=request, name="partials/candidato/candidato_edit_row.html", context={"candidato": candidato})
+    csrf_token = csrf_protect.generate_csrf()
+    return templates.TemplateResponse(request=request, name="partials/candidato/candidato_edit_row.html", context={"candidato": candidato, "csrf_token": csrf_token})
 
 
 @router.get("/")
@@ -53,7 +56,8 @@ def get_candidato(candidato_id: int, request: Request, session: Session = Depend
 
 
 @router.post("/")
-def create_candidato(candidato_data: CandidatoCreate, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_current_user)) -> Candidato:
+async def create_candidato(candidato_data: CandidatoCreate, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_current_user), csrf_protect: CsrfProtect = Depends()):
+    await csrf_protect.validate_csrf(request)
     candidato = Candidato(**candidato_data.model_dump(), created_by=current_user.id)
     candidato = insert_db_element(session, candidato)
 
@@ -66,7 +70,8 @@ def create_candidato(candidato_data: CandidatoCreate, request: Request, session:
 
 
 @router.put("/{candidato_id}")
-def update_candidato(candidato_id: int, candidato_data: CandidatoUpdate, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_current_user)):
+async def update_candidato(candidato_id: int, candidato_data: CandidatoUpdate, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_current_user), csrf_protect: CsrfProtect = Depends()):
+    await csrf_protect.validate_csrf(request)
     candidato = session.get(Candidato, candidato_id)
     if not candidato:
         raise HTTPException(status_code=404)
@@ -83,7 +88,8 @@ def update_candidato(candidato_id: int, candidato_data: CandidatoUpdate, request
 
 
 @router.delete("/{candidato_id}")
-def delete_candidato(candidato_id: int, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_current_user)):
+async def delete_candidato(candidato_id: int, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_current_user), csrf_protect: CsrfProtect = Depends()):
+    await csrf_protect.validate_csrf(request)
     candidato = session.get(Candidato, candidato_id)
     if not candidato:
         raise HTTPException(status_code=404)

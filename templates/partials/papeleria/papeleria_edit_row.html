@@ -1,4 +1,5 @@
 <tr id="doc-{{ doc.id }}" hx-encoding="multipart/form-data">
+    <td><input type="hidden" name="csrf_token" value="{{ csrf_token }}"></td>
     <td class="px-4 py-3">
         <select name="document_type" class="w-full rounded border px-2 py-1">
             {% for dt in document_types %}

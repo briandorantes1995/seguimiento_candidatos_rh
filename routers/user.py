@@ -5,6 +5,7 @@ from db.crud import insert_db_element, update_db_element, delete_db_element
 from sqlmodel import Session, select
 import uuid
 from fastapi.templating import Jinja2Templates
+from fastapi_csrf_protect import CsrfProtect
 from helpers import is_htmx, get_current_user, get_admin_or_owner, get_owner_user, delete_response, with_toast, utc_now
 from supabase_helper import upload_avatar
 
@@ -18,13 +19,15 @@ templates = Jinja2Templates(directory="templates")
 
 
 @router.get("/perfil")
-def read_perfil(request: Request, current_user: Usuario = Depends(get_current_user)):
-    return templates.TemplateResponse(request=request, name="perfil.html", context={"current_user": current_user})
+async def read_perfil(request: Request, current_user: Usuario = Depends(get_current_user), csrf_protect: CsrfProtect = Depends()):
+    csrf_token = csrf_protect.generate_csrf()
+    return templates.TemplateResponse(request=request, name="perfil.html", context={"current_user": current_user, "csrf_token": csrf_token})
 
 
 @router.get("/form")
-def read_usuarios_form(request: Request, current_user: Usuario = Depends(get_admin_or_owner)):
-    return templates.TemplateResponse(request=request, name="usuarios.html", context={"current_user": current_user})
+async def read_usuarios_form(request: Request, current_user: Usuario = Depends(get_admin_or_owner), csrf_protect: CsrfProtect = Depends()):
+    csrf_token = csrf_protect.generate_csrf()
+    return templates.TemplateResponse(request=request, name="usuarios.html", context={"current_user": current_user, "csrf_token": csrf_token})
 
 
 @router.get("/")
@@ -39,12 +42,13 @@ def read_usuarios(request: Request, session: Session = Depends(get_session), cur
 
 
 @router.get("/{usuario_id}/edit")
-def edit_usuario_form(usuario_id: str, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_admin_or_owner)):
+async def edit_usuario_form(usuario_id: str, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_admin_or_owner), csrf_protect: CsrfProtect = Depends()):
     usuario = session.get(Usuario, uuid.UUID(usuario_id))
     if not usuario:
         raise HTTPException(status_code=404)
     _check_user_edit_permission(current_user, usuario)
-    return templates.TemplateResponse(request=request, name="partials/usuarios/usuario_edit_row.html", context={"usuario": usuario})
+    csrf_token = csrf_protect.generate_csrf()
+    return templates.TemplateResponse(request=request, name="partials/usuarios/usuario_edit_row.html", context={"usuario": usuario, "csrf_token": csrf_token})
 
 
 @router.get("/{usuario_id}")
@@ -68,7 +72,8 @@ def _check_user_edit_permission(current_user: Usuario, target: Usuario):
 
 
 @router.post("/")
-def create_usuario(usuario_data: UsuarioCreate, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_owner_user)):
+async def create_usuario(usuario_data: UsuarioCreate, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_owner_user), csrf_protect: CsrfProtect = Depends()):
+    await csrf_protect.validate_csrf(request)
     existing = session.exec(select(Usuario).where(Usuario.email == usuario_data.email)).first()
     if existing:
         raise HTTPException(status_code=400, detail="El email ya está registrado")
@@ -89,7 +94,8 @@ def create_usuario(usuario_data: UsuarioCreate, request: Request, session: Sessi
 
 
 @router.put("/me")
-def update_perfil(usuario_data: UsuarioUpdate, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_current_user)):
+async def update_perfil(usuario_data: UsuarioUpdate, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_current_user), csrf_protect: CsrfProtect = Depends()):
+    await csrf_protect.validate_csrf(request)
     usuario = update_db_element(session, current_user, usuario_data)
     if is_htmx(request):
         return templates.TemplateResponse(request=request, name="partials/usuarios/usuario_perfil.html", context={"usuario": usuario})
@@ -102,7 +108,9 @@ async def upload_perfil_avatar(
     request: Request = None,
     session: Session = Depends(get_session),
     current_user: Usuario = Depends(get_current_user),
+    csrf_protect: CsrfProtect = Depends(),
 ):
+    await csrf_protect.validate_csrf(request)
     if not file.filename:
         raise HTTPException(status_code=400, detail="Archivo requerido")
 
@@ -119,7 +127,8 @@ async def upload_perfil_avatar(
 
 
 @router.put("/me/password")
-def change_password(password_data: PasswordChange, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_current_user)):
+async def change_password(password_data: PasswordChange, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_current_user), csrf_protect: CsrfProtect = Depends()):
+    await csrf_protect.validate_csrf(request)
     if not bcrypt.checkpw(password_data.current_password.encode(), current_user.password.encode()):
         if is_htmx(request):
             return templates.TemplateResponse(request=request, name="partials/usuarios/usuario_perfil.html", context={"usuario": current_user, "error": "Contraseña actual incorrecta"})
@@ -135,7 +144,8 @@ def change_password(password_data: PasswordChange, request: Request, session: Se
 
 
 @router.put("/{usuario_id}")
-def update_usuario(usuario_id: str, usuario_data: AdminUpdate, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_admin_or_owner)):
+async def update_usuario(usuario_id: str, usuario_data: AdminUpdate, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_admin_or_owner), csrf_protect: CsrfProtect = Depends()):
+    await csrf_protect.validate_csrf(request)
     usuario = session.get(Usuario, uuid.UUID(usuario_id))
     if not usuario:
         raise HTTPException(status_code=404)
@@ -163,7 +173,8 @@ def update_usuario(usuario_id: str, usuario_data: AdminUpdate, request: Request,
 
 
 @router.delete("/{usuario_id}")
-def delete_usuario(usuario_id: str, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_admin_or_owner)):
+async def delete_usuario(usuario_id: str, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_admin_or_owner), csrf_protect: CsrfProtect = Depends()):
+    await csrf_protect.validate_csrf(request)
     usuario = session.get(Usuario, uuid.UUID(usuario_id))
     if not usuario:
         raise HTTPException(status_code=404)

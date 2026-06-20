@@ -1,4 +1,5 @@
 <tr id="usuario-{{ usuario.id }}" hx-ext="json-enc">
+    <td><input type="hidden" name="csrf_token" value="{{ csrf_token }}"></td>
     <td class="px-4 py-3">
         <input type="text" name="name" value="{{ usuario.name }}"
             class="w-full rounded border px-2 py-1">

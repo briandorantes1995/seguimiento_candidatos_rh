@@ -1,4 +1,5 @@
 <tr id="postulacion-{{ postulacion.id }}" hx-ext="json-enc">
+<td><input type="hidden" name="csrf_token" value="{{ csrf_token }}"></td>
 <td>
  <select
     id="candidato_id"
