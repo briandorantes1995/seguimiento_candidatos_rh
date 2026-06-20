@@ -1,7 +1,7 @@
 version: "3.8"
 services:
   email-analyzer:
-    image: ghcr.io/briandorantes1995/analizadorpishing:latest
+    image: ghcr.io/briandorantes1995/seguimiento_candidatos_rh:latest
     container_name: rh
     restart: always
     networks:
