@@ -33,5 +33,15 @@
             hx-swap="outerHTML">
             Cancelar
         </button>
+        {% if usuario.otp_enabled %}
+        <button class="text-orange-600 hover:underline ml-2"
+            hx-post="/otp/admin-disable/{{ usuario.id }}"
+            hx-include="closest tr"
+            hx-target="#usuario-{{ usuario.id }}"
+            hx-swap="outerHTML"
+            hx-confirm="¿Deshabilitar 2FA para este usuario?">
+            Deshabilitar 2FA
+        </button>
+        {% endif %}
     </td>
 </tr>

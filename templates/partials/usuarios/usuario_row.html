@@ -14,6 +14,13 @@
     <td class="px-4 py-3">{{ usuario.email }}</td>
     <td class="px-4 py-3">{{ usuario.user_type.value }}</td>
     <td class="px-4 py-3">
+        {% if usuario.otp_enabled %}
+        <span class="text-green-600 text-sm font-medium">2FA ✓</span>
+        {% else %}
+        <span class="text-slate-400 text-sm">—</span>
+        {% endif %}
+    </td>
+    <td class="px-4 py-3">
         <button
             class="text-blue-600 hover:underline"
             hx-get="/usuarios/{{ usuario.id }}/edit"

@@ -54,6 +54,8 @@ class Usuario(TimestampMixin, table=True):
     avatar: str | None = Field(default=None)
     password: str
     user_type: UserType = Field(default=UserType.RECRUITER)
+    otp_secret: str | None = Field(default=None)
+    otp_enabled: bool = Field(default=False)
     empresas: list["Empresa"] = Relationship(back_populates="creador")
 
 
@@ -79,6 +81,7 @@ class AdminUpdate(SQLModel):
     email: str | None = None
     user_type: UserType | None = None
     password: str | None = None
+    otp_enabled: bool | None = None
 
 
 class Login(SQLModel):

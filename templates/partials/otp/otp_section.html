@@ -1,0 +1,45 @@
+<div id="otp-section">
+    {% if error %}
+    <div class="bg-red-50 border border-red-200 rounded p-4 text-red-800 mb-4">
+        {{ error }}
+    </div>
+    {% elif success %}
+    <div class="bg-green-50 border border-green-200 rounded p-4 text-green-800 mb-4">
+        {{ success }}
+    </div>
+    {% endif %}
+
+    <div class="bg-white border rounded-lg p-6 mb-8 shadow-sm">
+        {% if user.otp_enabled %}
+        <div class="flex items-center gap-2 mb-4">
+            <span class="w-3 h-3 rounded-full bg-green-500"></span>
+            <span class="text-green-700 font-medium">2FA activado</span>
+        </div>
+        <p class="text-sm text-slate-600 mb-4">Tu cuenta está protegida con autenticación en dos pasos.</p>
+        <div class="border-t pt-4">
+            <label class="block text-sm font-medium mb-1 text-slate-700">Contraseña para deshabilitar</label>
+            <div class="flex gap-2">
+                <input type="password" id="disable-password" placeholder="Tu contraseña actual"
+                    class="flex-1 rounded border px-3 py-2 text-sm" maxlength="72">
+                <button class="rounded bg-red-600 px-4 py-2 text-white text-sm hover:bg-red-700 transition whitespace-nowrap"
+                    hx-post="/otp/disable"
+                    hx-vals='{"csrf_token": "{{ csrf_token }}"}'
+                    hx-include="#disable-password"
+                    hx-target="#otp-section"
+                    hx-swap="outerHTML">
+                    Deshabilitar 2FA
+                </button>
+            </div>
+        </div>
+        {% else %}
+        <p class="text-slate-600 mb-4">2FA no está configurado. Añade una capa extra de seguridad a tu cuenta.</p>
+        <button class="rounded bg-slate-800 px-4 py-2 text-white hover:bg-slate-700 transition"
+            hx-post="/otp/generate"
+            hx-vals='{"csrf_token": "{{ csrf_token }}"}'
+            hx-target="#otp-section"
+            hx-swap="outerHTML">
+            Configurar 2FA
+        </button>
+        {% endif %}
+    </div>
+</div>

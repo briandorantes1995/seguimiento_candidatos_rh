@@ -20,4 +20,7 @@ dependencies = [
     "alembic>=1.18.4",
     "fastapi-csrf-protect>=1.0.7",
     "slowapi>=0.1.10",
+    "pyotp>=2.9.0",
+    "qrcode>=7.4.0",
+    "pillow>=10.0.0",
 ]

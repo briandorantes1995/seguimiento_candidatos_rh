@@ -11,42 +11,46 @@
 <body class="min-h-screen bg-slate-50 flex items-center justify-center">
 <div class="w-full max-w-sm bg-white border rounded-xl shadow-sm p-8">
 
-    <h1 class="text-2xl font-semibold text-center mb-6">Iniciar Sesión</h1>
+    <div id="auth-container">
 
-    <form
-        hx-ext="json-enc"
-        hx-post="/auth/login"
-        hx-target="#error"
-        hx-swap="innerHTML"
-        class="space-y-4">
+        <h1 class="text-2xl font-semibold text-center mb-6">Iniciar Sesión</h1>
 
-        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <form
+            hx-ext="json-enc"
+            hx-post="/auth/login"
+            hx-target="#error"
+            hx-swap="innerHTML"
+            class="space-y-4">
 
-        <div id="error" class="text-sm text-red-600 text-center min-h-[20px]"></div>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
 
-        <div>
-            <input
-                type="email"
-                name="email"
-                placeholder="correo@empresa.com"
-                class="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-slate-300">
-        </div>
+            <div id="error" class="text-sm text-red-600 text-center min-h-[20px]"></div>
 
-        <div>
-            <input
-                type="password"
-                name="password"
-                placeholder="Contraseña"
-                class="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-slate-300">
-        </div>
+            <div>
+                <input
+                    type="email"
+                    name="email"
+                    placeholder="correo@empresa.com"
+                    class="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-slate-300">
+            </div>
 
-        <button
-            type="submit"
-            class="w-full rounded-lg bg-slate-900 text-white py-2 hover:bg-slate-800 transition">
-            Entrar
-        </button>
+            <div>
+                <input
+                    type="password"
+                    name="password"
+                    placeholder="Contraseña"
+                    class="w-full rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-slate-300">
+            </div>
 
-    </form>
+            <button
+                type="submit"
+                class="w-full rounded-lg bg-slate-900 text-white py-2 hover:bg-slate-800 transition">
+                Entrar
+            </button>
+
+        </form>
+
+    </div>
 
 </div>
 </body>

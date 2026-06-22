@@ -1,0 +1,57 @@
+<div id="otp-section">
+    {% if error %}
+    <div class="bg-red-50 border border-red-200 rounded p-4 text-red-800 mb-4">
+        {{ error }}
+    </div>
+    {% endif %}
+
+    <div class="bg-white border rounded-lg p-6 mb-8 shadow-sm">
+        <h3 class="text-lg font-semibold mb-4">Configurar 2FA</h3>
+
+        <div class="flex flex-col items-center mb-6">
+            <img src="data:image/png;base64,{{ qr_b64 }}" alt="QR Code" class="w-48 h-48 mb-4">
+            <p class="text-sm text-slate-500 mb-2">Escanea este código con Google Authenticator</p>
+            <details class="text-sm text-slate-500">
+                <summary class="cursor-pointer hover:text-slate-700">O ingresa manualmente</summary>
+                <p class="mt-2 font-mono text-xs bg-slate-100 p-2 rounded select-all">{{ secret }}</p>
+            </details>
+        </div>
+
+        <div class="space-y-4">
+            <input type="hidden" id="otp-csrf-input" value="{{ csrf_token }}">
+
+            <div>
+                <label class="block text-sm font-medium mb-1">Código de verificación</label>
+                <input
+                    type="text"
+                    id="otp-code-input"
+                    name="otp_code"
+                    placeholder="000000"
+                    maxlength="6"
+                    pattern="[0-9]{6}"
+                    inputmode="numeric"
+                    autocomplete="one-time-code"
+                    class="w-full rounded border px-3 py-2 text-center text-xl tracking-[0.5em] focus:outline-none focus:ring-2 focus:ring-slate-300">
+            </div>
+
+            <button
+                type="button"
+                class="w-full rounded bg-slate-800 px-4 py-2 text-white hover:bg-slate-700 transition"
+                hx-post="/otp/verify-enable"
+                hx-vals='{"csrf_token": "{{ csrf_token }}"}'
+                hx-include="#otp-code-input"
+                hx-target="#otp-section"
+                hx-swap="outerHTML">
+                Verificar y activar
+            </button>
+        </div>
+
+        <button
+            class="mt-4 text-sm text-slate-500 hover:text-slate-700"
+            hx-get="/otp/section"
+            hx-target="#otp-section"
+            hx-swap="outerHTML">
+            Cancelar
+        </button>
+    </div>
+</div>

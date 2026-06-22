@@ -128,6 +128,16 @@
 
     </form>
 
+    <h2 class="text-xl font-semibold mb-4 text-slate-800">Autenticación en Dos Pasos (2FA)</h2>
+    <p class="text-gray-600 mb-4">Añade una capa extra de seguridad a tu cuenta usando Google Authenticator.</p>
+
+    <div id="otp-section"
+         hx-get="/otp/section"
+         hx-trigger="load"
+         hx-swap="innerHTML">
+        <p class="text-sm text-slate-500">Cargando...</p>
+    </div>
+
     <div id="perfil-result"></div>
     <div id="password-result"></div>
 </div>

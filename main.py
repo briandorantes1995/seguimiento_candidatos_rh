@@ -2,7 +2,7 @@ import os
 from fastapi import Depends, FastAPI,Request,HTTPException
 from fastapi.responses import RedirectResponse,JSONResponse
 from db.models import Usuario,create_db_and_tables
-from routers import empresa,puesto,candidato,auth,entrevista,postulaciones,user,papeleria,dashboard
+from routers import empresa,puesto,candidato,auth,entrevista,postulaciones,user,papeleria,dashboard,otp
 from fastapi.templating import Jinja2Templates
 from helpers import get_current_user
 from rate_limit import limiter
@@ -48,6 +48,7 @@ app.include_router(entrevista.router)
 app.include_router(user.router)
 app.include_router(papeleria.router)
 app.include_router(dashboard.router)
+app.include_router(otp.router)
 app.include_router(auth.router)
 
 
