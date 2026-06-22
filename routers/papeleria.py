@@ -31,8 +31,10 @@ async def papeleria_por_candidato(candidato_id: int, request: Request, session: 
     if is_htmx(request):
         return templates.TemplateResponse(request=request, name="partials/papeleria/papeleria_list.html", context={"papeleria": papeleria})
 
-    csrf_token = csrf_protect.generate_csrf()
-    return templates.TemplateResponse(request=request, name="papeleria.html", context={"candidato": candidato, "papeleria": papeleria, "document_types": document_types, "csrf_token": csrf_token})
+    csrf_token, signed_token = csrf_protect.generate_csrf_tokens()
+    response = templates.TemplateResponse(request=request, name="papeleria.html", context={"candidato": candidato, "papeleria": papeleria, "document_types": document_types, "csrf_token": csrf_token})
+    csrf_protect.set_csrf_cookie(signed_token, response)
+    return response
 
 
 @router.post("/upload")
@@ -80,8 +82,10 @@ async def edit_papeleria_form(papeleria_id: str, request: Request, session: Sess
         raise HTTPException(status_code=404)
     check_owner(papeleria, current_user)
     document_types = list(DocumentType)
-    csrf_token = csrf_protect.generate_csrf()
-    return templates.TemplateResponse(request=request, name="partials/papeleria/papeleria_edit_row.html", context={"doc": papeleria, "document_types": document_types, "csrf_token": csrf_token})
+    csrf_token, signed_token = csrf_protect.generate_csrf_tokens()
+    response = templates.TemplateResponse(request=request, name="partials/papeleria/papeleria_edit_row.html", context={"doc": papeleria, "document_types": document_types, "csrf_token": csrf_token})
+    csrf_protect.set_csrf_cookie(signed_token, response)
+    return response
 
 
 @router.get("/{papeleria_id}")
@@ -166,8 +170,7 @@ async def update_papeleria(papeleria_id: str, papeleria_data: PapeleriaUpdate, r
 
 
 @router.delete("/{papeleria_id}")
-async def delete_papeleria(papeleria_id: str, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_current_user), csrf_protect: CsrfProtect = Depends()):
-    await csrf_protect.validate_csrf(request)
+def delete_papeleria(papeleria_id: str, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_current_user)):
     papeleria = session.get(Papeleria, uuid.UUID(papeleria_id))
     if not papeleria:
         raise HTTPException(status_code=404)

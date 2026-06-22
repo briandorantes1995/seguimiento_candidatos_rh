@@ -18,8 +18,10 @@ templates = Jinja2Templates(directory="templates")
 
 @router.get("/form")
 async def read_empresa_form(request: Request, csrf_protect: CsrfProtect = Depends()):
-    csrf_token = csrf_protect.generate_csrf()
-    return templates.TemplateResponse(request=request, name="empresa.html", context={"csrf_token": csrf_token})
+    csrf_token, signed_token = csrf_protect.generate_csrf_tokens()
+    response = templates.TemplateResponse(request=request, name="empresa.html", context={"csrf_token": csrf_token})
+    csrf_protect.set_csrf_cookie(signed_token, response)
+    return response
 
 
 @router.get("/{empresa_id}/edit")
@@ -29,8 +31,10 @@ async def edit_empresa_form(empresa_id: int, request: Request, session: Session 
         raise HTTPException(status_code=404)
     check_owner(empresa, current_user)
 
-    csrf_token = csrf_protect.generate_csrf()
-    return templates.TemplateResponse(request=request, name="partials/empresa/empresa_edit_row.html", context={"empresa": empresa, "csrf_token": csrf_token})
+    csrf_token, signed_token = csrf_protect.generate_csrf_tokens()
+    response = templates.TemplateResponse(request=request, name="partials/empresa/empresa_edit_row.html", context={"empresa": empresa, "csrf_token": csrf_token})
+    csrf_protect.set_csrf_cookie(signed_token, response)
+    return response
 
 
 @router.get("/")
@@ -88,8 +92,7 @@ async def update_empresa(empresa_id: int, empresa_data: EmpresaUpdate, request: 
 
 
 @router.delete("/{empresa_id}")
-async def delete_empresa(empresa_id: int, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_current_user), csrf_protect: CsrfProtect = Depends()):
-    await csrf_protect.validate_csrf(request)
+def delete_empresa(empresa_id: int, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_current_user)):
     empresa = session.get(Empresa, empresa_id)
     if not empresa:
         raise HTTPException(status_code=404)

@@ -19,8 +19,10 @@ templates = Jinja2Templates(directory="templates")
 @router.get("/form")
 async def read_puesto_form(request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_current_user), csrf_protect: CsrfProtect = Depends()):
     empresas = session.exec(apply_ownership_filter(select(Empresa), Empresa, current_user)).all()
-    csrf_token = csrf_protect.generate_csrf()
-    return templates.TemplateResponse(request=request, name="puesto.html", context={"empresas": empresas, "csrf_token": csrf_token})
+    csrf_token, signed_token = csrf_protect.generate_csrf_tokens()
+    response = templates.TemplateResponse(request=request, name="puesto.html", context={"empresas": empresas, "csrf_token": csrf_token})
+    csrf_protect.set_csrf_cookie(signed_token, response)
+    return response
 
 
 @router.get("/{puesto_id}/edit")
@@ -31,8 +33,10 @@ async def edit_puesto_form(puesto_id: int, request: Request, session: Session = 
     check_owner(puesto, current_user)
 
     empresas = session.exec(apply_ownership_filter(select(Empresa), Empresa, current_user)).all()
-    csrf_token = csrf_protect.generate_csrf()
-    return templates.TemplateResponse(request=request, name="partials/puesto/puesto_edit_row.html", context={"puesto": puesto, "empresas": empresas, "csrf_token": csrf_token})
+    csrf_token, signed_token = csrf_protect.generate_csrf_tokens()
+    response = templates.TemplateResponse(request=request, name="partials/puesto/puesto_edit_row.html", context={"puesto": puesto, "empresas": empresas, "csrf_token": csrf_token})
+    csrf_protect.set_csrf_cookie(signed_token, response)
+    return response
 
 
 @router.get("/")
@@ -90,8 +94,7 @@ async def update_puesto(puesto_id: int, puesto_data: PuestoUpdate, request: Requ
 
 
 @router.delete("/{puesto_id}")
-async def delete_puesto(puesto_id: int, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_current_user), csrf_protect: CsrfProtect = Depends()):
-    await csrf_protect.validate_csrf(request)
+def delete_puesto(puesto_id: int, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_current_user)):
     puesto = session.get(Puesto, puesto_id)
     if not puesto:
         raise HTTPException(status_code=404)

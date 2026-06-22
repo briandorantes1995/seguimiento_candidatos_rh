@@ -6,7 +6,12 @@ from db.models import Usuario, UserType, get_session
 from sqlmodel import Session, SQLModel
 from jose import jwt
 
-SECRET_KEY = "supersecret"
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 ALGORITHM = "HS256"
 
 

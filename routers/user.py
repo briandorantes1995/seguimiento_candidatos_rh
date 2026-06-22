@@ -20,14 +20,18 @@ templates = Jinja2Templates(directory="templates")
 
 @router.get("/perfil")
 async def read_perfil(request: Request, current_user: Usuario = Depends(get_current_user), csrf_protect: CsrfProtect = Depends()):
-    csrf_token = csrf_protect.generate_csrf()
-    return templates.TemplateResponse(request=request, name="perfil.html", context={"current_user": current_user, "csrf_token": csrf_token})
+    csrf_token, signed_token = csrf_protect.generate_csrf_tokens()
+    response = templates.TemplateResponse(request=request, name="perfil.html", context={"current_user": current_user, "csrf_token": csrf_token})
+    csrf_protect.set_csrf_cookie(signed_token, response)
+    return response
 
 
 @router.get("/form")
 async def read_usuarios_form(request: Request, current_user: Usuario = Depends(get_admin_or_owner), csrf_protect: CsrfProtect = Depends()):
-    csrf_token = csrf_protect.generate_csrf()
-    return templates.TemplateResponse(request=request, name="usuarios.html", context={"current_user": current_user, "csrf_token": csrf_token})
+    csrf_token, signed_token = csrf_protect.generate_csrf_tokens()
+    response = templates.TemplateResponse(request=request, name="usuarios.html", context={"current_user": current_user, "csrf_token": csrf_token})
+    csrf_protect.set_csrf_cookie(signed_token, response)
+    return response
 
 
 @router.get("/")
@@ -47,8 +51,10 @@ async def edit_usuario_form(usuario_id: str, request: Request, session: Session 
     if not usuario:
         raise HTTPException(status_code=404)
     _check_user_edit_permission(current_user, usuario)
-    csrf_token = csrf_protect.generate_csrf()
-    return templates.TemplateResponse(request=request, name="partials/usuarios/usuario_edit_row.html", context={"usuario": usuario, "csrf_token": csrf_token})
+    csrf_token, signed_token = csrf_protect.generate_csrf_tokens()
+    response = templates.TemplateResponse(request=request, name="partials/usuarios/usuario_edit_row.html", context={"usuario": usuario, "csrf_token": csrf_token})
+    csrf_protect.set_csrf_cookie(signed_token, response)
+    return response
 
 
 @router.get("/{usuario_id}")
@@ -173,8 +179,7 @@ async def update_usuario(usuario_id: str, usuario_data: AdminUpdate, request: Re
 
 
 @router.delete("/{usuario_id}")
-async def delete_usuario(usuario_id: str, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_admin_or_owner), csrf_protect: CsrfProtect = Depends()):
-    await csrf_protect.validate_csrf(request)
+def delete_usuario(usuario_id: str, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_admin_or_owner)):
     usuario = session.get(Usuario, uuid.UUID(usuario_id))
     if not usuario:
         raise HTTPException(status_code=404)

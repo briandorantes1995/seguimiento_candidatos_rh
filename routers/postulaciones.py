@@ -20,8 +20,10 @@ templates = Jinja2Templates(directory="templates")
 async def read_postulacion_form(request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_current_user), csrf_protect: CsrfProtect = Depends()):
     puestos = session.exec(apply_ownership_filter(select(Puesto), Puesto, current_user)).all()
     candidatos = session.exec(apply_ownership_filter(select(Candidato), Candidato, current_user)).all()
-    csrf_token = csrf_protect.generate_csrf()
-    return templates.TemplateResponse(request=request, name="postulaciones.html", context={"puestos": puestos,"candidatos": candidatos, "csrf_token": csrf_token})
+    csrf_token, signed_token = csrf_protect.generate_csrf_tokens()
+    response = templates.TemplateResponse(request=request, name="postulaciones.html", context={"puestos": puestos,"candidatos": candidatos, "csrf_token": csrf_token})
+    csrf_protect.set_csrf_cookie(signed_token, response)
+    return response
 
 
 @router.get("/{postulacion_id}/edit")
@@ -33,8 +35,10 @@ async def edit_postulacion_form(postulacion_id: int, request: Request, session: 
 
     puestos = session.exec(apply_ownership_filter(select(Puesto), Puesto, current_user)).all()
     candidatos = session.exec(apply_ownership_filter(select(Candidato), Candidato, current_user)).all()
-    csrf_token = csrf_protect.generate_csrf()
-    return templates.TemplateResponse(request=request, name="partials/postulaciones/postulacion_edit_row.html", context={"postulacion": postulacion,"puestos": puestos,"candidatos": candidatos, "csrf_token": csrf_token})
+    csrf_token, signed_token = csrf_protect.generate_csrf_tokens()
+    response = templates.TemplateResponse(request=request, name="partials/postulaciones/postulacion_edit_row.html", context={"postulacion": postulacion,"puestos": puestos,"candidatos": candidatos, "csrf_token": csrf_token})
+    csrf_protect.set_csrf_cookie(signed_token, response)
+    return response
 
 
 @router.get("/")
@@ -92,8 +96,7 @@ async def update_postulacion(postulacion_id: int, postulacion_data: PostulacionU
 
 
 @router.delete("/{postulacion_id}")
-async def delete_postulacion(postulacion_id: int, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_current_user), csrf_protect: CsrfProtect = Depends()):
-    await csrf_protect.validate_csrf(request)
+def delete_postulacion(postulacion_id: int, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_current_user)):
     postulacion = session.get(Postulacion, postulacion_id)
     if not postulacion:
         raise HTTPException(status_code=404)

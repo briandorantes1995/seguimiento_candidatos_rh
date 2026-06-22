@@ -18,8 +18,10 @@ templates = Jinja2Templates(directory="templates")
 
 @router.get("/form")
 async def read_candidato_form(request: Request, csrf_protect: CsrfProtect = Depends()):
-    csrf_token = csrf_protect.generate_csrf()
-    return templates.TemplateResponse(request=request, name="candidatos.html", context={"csrf_token": csrf_token})
+    csrf_token, signed_token = csrf_protect.generate_csrf_tokens()
+    response = templates.TemplateResponse(request=request, name="candidatos.html", context={"csrf_token": csrf_token})
+    csrf_protect.set_csrf_cookie(signed_token, response)
+    return response
 
 
 @router.get("/{candidato_id}/edit")
@@ -29,8 +31,10 @@ async def edit_candidato_form(candidato_id: int, request: Request, session: Sess
         raise HTTPException(status_code=404)
     check_owner(candidato, current_user)
 
-    csrf_token = csrf_protect.generate_csrf()
-    return templates.TemplateResponse(request=request, name="partials/candidato/candidato_edit_row.html", context={"candidato": candidato, "csrf_token": csrf_token})
+    csrf_token, signed_token = csrf_protect.generate_csrf_tokens()
+    response = templates.TemplateResponse(request=request, name="partials/candidato/candidato_edit_row.html", context={"candidato": candidato, "csrf_token": csrf_token})
+    csrf_protect.set_csrf_cookie(signed_token, response)
+    return response
 
 
 @router.get("/")
@@ -88,8 +92,7 @@ async def update_candidato(candidato_id: int, candidato_data: CandidatoUpdate, r
 
 
 @router.delete("/{candidato_id}")
-async def delete_candidato(candidato_id: int, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_current_user), csrf_protect: CsrfProtect = Depends()):
-    await csrf_protect.validate_csrf(request)
+def delete_candidato(candidato_id: int, request: Request, session: Session = Depends(get_session), current_user: Usuario = Depends(get_current_user)):
     candidato = session.get(Candidato, candidato_id)
     if not candidato:
         raise HTTPException(status_code=404)

@@ -36,19 +36,35 @@ def read_candidato_form(request: Request,csrf_protect: CsrfProtect = Depends()):
 
 
 @router.post("/login")
-async def login( request: Request,login_data: Login, csrf_protect: CsrfProtect = Depends(),session: Session = Depends(get_session)):
-    await csrf_protect.validate_csrf(request)
-    usuario = session.exec(select(Usuario).where(Usuario.email == login_data.email)).first()
+async def login(request: Request, session: Session = Depends(get_session)):
+    try:
+        body = await request.json()
+    except Exception:
+        return Response(
+            content="Error al procesar la solicitud",
+            media_type="text/html",
+            status_code=200,
+            headers={"HX-Retarget": "#error", "HX-Reswap": "innerHTML"}
+        )
+    email = body.get("email")
+    password = body.get("password")
 
-    if not usuario or not bcrypt.checkpw(login_data.password.encode(), usuario.password.encode()):
+    if not email or not password:
+        return Response(
+            content="Correo y contraseña requeridos",
+            media_type="text/html",
+            status_code=200,
+            headers={"HX-Retarget": "#error", "HX-Reswap": "innerHTML"}
+        )
+
+    usuario = session.exec(select(Usuario).where(Usuario.email == email)).first()
+
+    if not usuario or not bcrypt.checkpw(password.encode(), usuario.password.encode()):
         return Response(
             content="Correo o contraseña incorrectos",
             media_type="text/html",
             status_code=200,
-            headers={
-                "HX-Retarget": "#error",
-                "HX-Reswap": "innerHTML"
-            }
+            headers={"HX-Retarget": "#error", "HX-Reswap": "innerHTML"}
         )
 
     payload = {"user_id": str(usuario.id), "user_name": usuario.name}
@@ -72,13 +88,14 @@ def register(usuario: Usuario,session: Session = Depends(get_session)) -> Usuari
 
     usuario.password = hashed_password
 
-    insert_db_element(usuario)
+    insert_db_element(session, usuario)
 
     return usuario
 
 
 @router.post("/logout")
-def logout():
+async def logout(request: Request, csrf_protect: CsrfProtect = Depends()):
+    await csrf_protect.validate_csrf(request)
     response = RedirectResponse(
         url="/auth/",
         status_code=303

@@ -27,7 +27,9 @@ app.state.limiter = limiter
 class CsrfSettings(BaseSettings):
   secret_key: str = CSRF_SECRET_KEY
   cookie_samesite: str = "lax"
-  cookie_secure: bool = True
+  cookie_secure: bool = False
+  token_location: str = "body"
+  token_key: str = "csrf_token"
 
 @CsrfProtect.load_config
 def get_csrf_config():
@@ -65,10 +67,11 @@ def health():
     return {"Hello": "World"}
 
 @app.get("/home")
-def home(request: Request,current_user: Usuario = Depends(get_current_user),):
-    return templates.TemplateResponse(
+def home(request: Request, current_user: Usuario = Depends(get_current_user), csrf_protect: CsrfProtect = Depends()):
+    csrf_token, signed_token = csrf_protect.generate_csrf_tokens()
+    response = templates.TemplateResponse(
         request=request,
         name="home.html",
-        context={
-            "user": current_user
-        })
+        context={"user": current_user, "csrf_token": csrf_token})
+    csrf_protect.set_csrf_cookie(signed_token, response)
+    return response
